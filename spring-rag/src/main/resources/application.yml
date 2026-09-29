@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: spring-rag
+  ai:
+    model:
+      chat: ollama
+    ollama:
+      base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: never
+      chat:
+        model: ${SPRING_AI_OLLAMA_CHAT_MODEL:llama3.2}
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

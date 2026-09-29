@@ -4,9 +4,31 @@ SpringRAG answers user questions from stored documents and from MCP servers that
 
 ## Stack
 
-- **Ollama** runs the local language model and embeddings.
+- **Ollama 0.34.4** runs the local language model and embeddings.
 - **pgvector** stores document embeddings in PostgreSQL.
-- **Spring AI** ties the model, the vector store, and the question flow together.
+- **Spring AI 2.0.1** on **Spring Boot 4.1.1** ties the model, the vector store, and the question flow together. That application lives in `spring-rag/`.
+
+## Run
+
+Ollama and the `spring-rag` application are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
+
+```bash
+docker compose up --build
+```
+
+The application listens on port `8080` and talks to Ollama at `http://ollama:11434`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
+
+```bash
+docker compose exec ollama ollama pull llama3.2
+```
+
+Send a question:
+
+```bash
+curl -s http://localhost:8080/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"What is in the documents?"}'
+```
 
 ## Documents
 
