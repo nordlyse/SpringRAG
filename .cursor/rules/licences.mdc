@@ -1,0 +1,12 @@
+---
+description: Third-party tools must use MIT or Apache-2.0 only
+alwaysApply: true
+---
+
+# Licences
+
+Every tool, library, and runtime dependency must be MIT or Apache-2.0.
+
+- Do not add GPL, proprietary, or any other licence.
+- If a needed library is not MIT or Apache-2.0, pick an MIT or Apache-2.0 alternative, or ask before adding it.
+- Record the licence choice when a new dependency is added.

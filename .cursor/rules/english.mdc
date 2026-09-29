@@ -1,0 +1,16 @@
+---
+description: Comments, names, and docs stay in English
+alwaysApply: true
+---
+
+# Language
+
+Write all of the following in English:
+
+- Code comments
+- Class, method, and variable names
+- `README.md` and other docs
+- Commit messages
+- UI copy
+
+Chat replies may follow the user's language.

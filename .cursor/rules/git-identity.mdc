@@ -1,0 +1,18 @@
+---
+description: Push only as nordlyse and reject cursoragent
+alwaysApply: true
+---
+
+# Git identity
+
+Push only as Jakob Lyse (`jakob.lyse@gmail.com`) on the GitHub account `nordlyse`.
+
+Check this before every push:
+
+- Remote URL is `github.com/nordlyse/...` (SSH: `git@github.com:nordlyse/...`).
+- SSH reports `Hi nordlyse!`.
+- Author and committer on every outgoing commit are `Jakob Lyse <jakob.lyse@gmail.com>`.
+- Commit messages have no `Co-authored-by` for Cursor, `cursoragent`, or any other agent.
+- Never use `omer.kurtuld`, `OmerKurtuldu`, `omerkurtuldu@gmail.com`, or `CriticalSolution`.
+
+The local hook in `.githooks/pre-push` runs the same checks. Keep `core.hooksPath` set to `.githooks`.

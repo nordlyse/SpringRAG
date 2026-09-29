@@ -1,0 +1,20 @@
+---
+description: Prefer add or insert over the word create
+alwaysApply: true
+---
+
+# Wording
+
+Do not use the word "create" in method names, class names, comments, UI copy, README, docs, or commit messages.
+
+Use `add` or `insert` instead.
+
+```java
+// Bad
+void createIndex() {}
+
+// Good
+void addIndex() {}
+```
+
+Framework APIs that require that word may stay, for example `Files.createDirectories` and `document.createElement`.

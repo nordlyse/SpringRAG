@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build output
+target/
+build/
+out/
+dist/
+node_modules/
+*.class
+*.log
