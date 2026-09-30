@@ -12,6 +12,23 @@ services:
       retries: 12
       start_period: 10s
 
+  pgvector:
+    image: pgvector/pgvector:0.8.6-pg17
+    environment:
+      POSTGRES_DB: springrag
+      POSTGRES_USER: springrag
+      POSTGRES_PASSWORD: springrag
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U springrag -d springrag"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
   spring-rag:
     build: ./spring-rag
     ports:
@@ -19,9 +36,18 @@ services:
     environment:
       SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
       SPRING_AI_OLLAMA_CHAT_MODEL: llama3.2
+      SPRING_RAG_DATA_DIRECTORY: /app/data
+      SPRING_RAG_DATABASE_URL: jdbc:postgresql://pgvector:5432/springrag
+      SPRING_RAG_DATABASE_USERNAME: springrag
+      SPRING_RAG_DATABASE_PASSWORD: springrag
+    volumes:
+      - ./spring-rag/data:/app/data
     depends_on:
       ollama:
+        condition: service_healthy
+      pgvector:
         condition: service_healthy
 
 volumes:
   ollama:
+  pgvector-data:

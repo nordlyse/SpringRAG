@@ -5,8 +5,8 @@ SpringRAG answers user questions from stored documents and from MCP servers that
 ## Stack
 
 - **Ollama 0.34.4** runs the local language model and embeddings.
-- **pgvector** stores document embeddings in PostgreSQL.
-- **Spring AI 2.0.1** on **Spring Boot 4.1.1** ties the model, the vector store, and the question flow together. That application lives in `spring-rag/`.
+- **pgvector 0.8.6** on PostgreSQL 17 stores document embeddings.
+- **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** ties the model, the vector store, and the question flow together. That application lives in `spring-rag/`.
 
 ## Run
 
@@ -16,11 +16,19 @@ Ollama and the `spring-rag` application are defined in `compose.yaml`. The Sprin
 docker compose up --build
 ```
 
-The application listens on port `8080` and talks to Ollama at `http://ollama:11434`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
+The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
 ```
+
+Upload a document:
+
+```bash
+curl -s -F "file=@notes.txt" http://localhost:8080/documents
+```
+
+Allowed types are PDF, PNG, JPEG, TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV.
 
 Send a question:
 

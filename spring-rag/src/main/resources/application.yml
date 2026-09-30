@@ -1,15 +1,39 @@
 spring:
   application:
     name: spring-rag
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   ai:
     model:
       chat: ollama
+      embedding: ollama
     ollama:
       base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}
       init:
         pull-model-strategy: never
       chat:
         model: ${SPRING_AI_OLLAMA_CHAT_MODEL:llama3.2}
+      embedding:
+        model: ${SPRING_AI_OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
+        schema-name: ${SPRING_RAG_DATABASE_SCHEMA:public}
+        table-name: ${SPRING_RAG_DATABASE_TABLE:vector_store}
+
+spring-rag:
+  data-directory: ${SPRING_RAG_DATA_DIRECTORY:data}
+  database:
+    url: ${SPRING_RAG_DATABASE_URL:jdbc:postgresql://localhost:5432/springrag}
+    username: ${SPRING_RAG_DATABASE_USERNAME:springrag}
+    password: ${SPRING_RAG_DATABASE_PASSWORD:springrag}
+    schema: ${SPRING_RAG_DATABASE_SCHEMA:public}
+    table: ${SPRING_RAG_DATABASE_TABLE:vector_store}
 
 server:
   port: 8080

@@ -22,3 +22,7 @@ dist/
 node_modules/
 *.class
 *.log
+
+# Uploaded documents
+spring-rag/data/*
+!spring-rag/data/.gitkeep
