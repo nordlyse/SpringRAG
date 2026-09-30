@@ -49,4 +49,24 @@ class DocumentControllerTest {
         mockMvc.perform(multipart("/documents").file(file))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void addStoresSeveralFiles() throws Exception {
+        when(documentStorageService.add(any()))
+                .thenReturn(new StoredDocument("a.txt", 1, "text/plain"))
+                .thenReturn(new StoredDocument("b.pdf", 2, "application/pdf"));
+        MockMultipartFile first = new MockMultipartFile("file", "a.txt", "text/plain", "a".getBytes());
+        MockMultipartFile second = new MockMultipartFile("file", "b.pdf", "application/pdf", "bb".getBytes());
+
+        mockMvc.perform(multipart("/documents").file(first).file(second))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[1].fileName").value("b.pdf"));
+    }
+
+    @Test
+    void addRejectsARequestWithoutAFile() throws Exception {
+        mockMvc.perform(multipart("/documents"))
+                .andExpect(status().isBadRequest());
+    }
 }
