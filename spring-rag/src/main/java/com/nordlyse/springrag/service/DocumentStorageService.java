@@ -59,6 +59,57 @@ public class DocumentStorageService {
         return new StoredDocument(storedName, file.getSize(), mediaType);
     }
 
+    public StoredDocument replace(String fileName, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required.");
+        }
+        Path target = resolveStored(fileName);
+        String storedExtension = extension(target.getFileName().toString());
+        String incomingExtension = extension(fileName(file));
+        if (!storedExtension.equals(incomingExtension) || !ALLOWED_EXTENSIONS.contains(incomingExtension)) {
+            throw new IllegalArgumentException("File type is not allowed: " + incomingExtension);
+        }
+        write(target);
+        try (InputStream input = file.getInputStream()) {
+            Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (IOException exception) {
+            throw new UncheckedIOException("Unable to store " + target.getFileName(), exception);
+        }
+        String mediaType = file.getContentType() == null ? "application/octet-stream" : file.getContentType();
+        return new StoredDocument(target.getFileName().toString(), file.getSize(), mediaType);
+    }
+
+    public void remove(String fileName) {
+        Path target = resolveStored(fileName);
+        try {
+            Files.deleteIfExists(target);
+        }
+        catch (IOException exception) {
+            throw new UncheckedIOException("Unable to remove " + fileName, exception);
+        }
+    }
+
+    private Path resolveStored(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            throw new IllegalArgumentException("File name is required.");
+        }
+        Path target = dataDirectory.resolve(fileName).normalize();
+        if (!target.startsWith(dataDirectory) || target.equals(dataDirectory)) {
+            throw new IllegalArgumentException("File name is not allowed.");
+        }
+        return target;
+    }
+
+    private void write(Path target) {
+        try {
+            Files.createDirectories(dataDirectory);
+        }
+        catch (IOException exception) {
+            throw new UncheckedIOException("Unable to store " + target.getFileName(), exception);
+        }
+    }
+
     private static String fileName(MultipartFile file) {
         String original = file.getOriginalFilename();
         if (original == null || original.isBlank()) {

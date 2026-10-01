@@ -183,4 +183,35 @@ class DocumentStorageServiceTest {
                 .isInstanceOf(UncheckedIOException.class)
                 .hasMessageContaining("Unable to store");
     }
+
+    @Test
+    void replaceOverwritesTheStoredFile() throws Exception {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        StoredDocument stored = service.add(new MockMultipartFile("file", "notes.txt", "text/plain", "hello".getBytes()));
+        MockMultipartFile updated = new MockMultipartFile("file", "notes.txt", "text/plain", "updated".getBytes());
+
+        StoredDocument replaced = service.replace(stored.fileName(), updated);
+
+        assertThat(replaced.fileName()).isEqualTo(stored.fileName());
+        assertThat(Files.readString(dataDirectory.resolve(stored.fileName()))).isEqualTo("updated");
+    }
+
+    @Test
+    void removeDeletesTheStoredFile() throws Exception {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        StoredDocument stored = service.add(new MockMultipartFile("file", "notes.txt", "text/plain", "hello".getBytes()));
+
+        service.remove(stored.fileName());
+
+        assertThat(Files.exists(dataDirectory.resolve(stored.fileName()))).isFalse();
+    }
+
+    @Test
+    void removeRejectsAPathOutsideTheDataDirectory() {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+
+        assertThatThrownBy(() -> service.remove("../secret.txt"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not allowed");
+    }
 }
