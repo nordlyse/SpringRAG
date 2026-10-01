@@ -1,26 +1,42 @@
 # SpringRAG
 
-SpringRAG answers user questions from stored documents and from MCP servers that are explicitly allowed. The stack is Ollama, pgvector, and Spring AI.
+SpringRAG is a retrieval-augmented question system built with Ollama, pgvector, and Spring AI. Stored documents and MCP servers that are explicitly allowed are the intended sources for an answer. The application lives in `spring-rag/`.
 
 ## Stack
 
-- **Ollama 0.34.4** runs the local language model and embeddings.
-- **pgvector 0.8.6** on PostgreSQL 17 stores document embeddings.
-- **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** ties the model, the vector store, and the question flow together. That application lives in `spring-rag/`.
+- **Ollama 0.34.4** runs the local chat model and embeddings.
+- **pgvector 0.8.6** on PostgreSQL 17 holds the vector store and the document records.
+- **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** connects the model, the vector store, and the HTTP API.
+- Chat model: `llama3.2`. Embedding model: `nomic-embed-text` (768 dimensions).
 
 ## Run
 
-Ollama and the `spring-rag` application are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
+Ollama, pgvector, and the application are defined in `compose.yaml`.
 
 ```bash
 docker compose up --build
 ```
 
-The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
+The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to PostgreSQL at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. Pull the models once Ollama is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
+docker compose exec ollama ollama pull nomic-embed-text
 ```
+
+## Documents
+
+Allowed types are PDF, PNG, JPEG (`.jpeg` and `.jpg`), TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV. An empty file or any other extension is rejected with `400`. Each file may be up to 50 MB.
+
+`POST` stores the bytes under `spring-rag/data` and inserts a row in the `documents` table (`file_name`, `media_type`, `size_bytes`). The stored name is the safe base name, a unique id, and the original extension, for example `notes-3f1c2a0e-....txt`. Later calls use that stored name.
+
+| Method | Path | Result |
+| --- | --- | --- |
+| `GET` | `/documents` | Lists the stored document records. |
+| `GET` | `/documents/{fileName}` | Returns one record, or `404` when it is missing. |
+| `POST` | `/documents` | Stores one or more files and returns `201`. The multipart part name is `file`. |
+| `PUT` | `/documents/{fileName}` | Replaces the file bytes and updates the media type and size. The new file must use the same extension. Missing records return `404`. |
+| `DELETE` | `/documents/{fileName}` | Removes the database row and then the file. Success is `204`. A missing record returns `404`. |
 
 Upload a document:
 
@@ -28,9 +44,29 @@ Upload a document:
 curl -s -F "file=@notes.txt" http://localhost:8080/documents
 ```
 
-Allowed types are PDF, PNG, JPEG, TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV.
+List stored documents:
 
-Send a question:
+```bash
+curl -s http://localhost:8080/documents
+```
+
+Replace one document. `{fileName}` is the name returned by the upload:
+
+```bash
+curl -s -X PUT -F "file=@notes.txt" http://localhost:8080/documents/{fileName}
+```
+
+Remove one document:
+
+```bash
+curl -s -X DELETE -o /dev/null -w "%{http_code}\n" http://localhost:8080/documents/{fileName}
+```
+
+Each record is JSON with `fileName`, `size`, and `mediaType`.
+
+## Questions
+
+Send a question to the chat model:
 
 ```bash
 curl -s http://localhost:8080/chat \
@@ -38,31 +74,19 @@ curl -s http://localhost:8080/chat \
   -d '{"message":"What is in the documents?"}'
 ```
 
-## Documents
+The reply is JSON with a `reply` field. A blank message returns `400`.
 
-The system reads the following file types and uses their content when answering:
-
-- PDF
-- PNG
-- JPEG
-- TXT
-- DOC
-- DOCX
-- XLS
-- XLSX
-- PPTX
-- PPT
-- CSV
-
-Text is taken from each file, split into passages, embedded, and inserted into pgvector. PNG and JPEG files are read as images so their visible content can be used as well. A question is answered from the passages retrieved for that question.
-
-## Allowed MCP servers
-
-The system may also call MCP servers, but only servers that have been explicitly allowed. Any other MCP server is left unused.
-
-A reply is built from both sources when the question needs them:
+The intended answer path uses two sources when the question needs them:
 
 1. Passages retrieved from the stored documents.
-2. Results returned by the allowed MCP servers.
+2. Results returned by MCP servers that have been explicitly allowed. Any other MCP server stays unused.
 
-Document content stays in the answer path even when an allowed MCP server is called, so the reply is grounded in the user's files and in those permitted tools.
+Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. Passage retrieval and MCP calls are not wired into `/chat` yet. The current endpoint sends the message to the Ollama chat model.
+
+## Tests
+
+```bash
+mvn -f spring-rag/pom.xml test
+```
+
+JaCoCo writes the coverage report to `spring-rag/target/site/jacoco/index.html`.
