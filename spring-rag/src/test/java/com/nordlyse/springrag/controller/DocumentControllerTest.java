@@ -1,9 +1,12 @@
 package com.nordlyse.springrag.controller;
 
+import java.util.List;
+
 import com.nordlyse.springrag.service.DocumentStorageService;
 import com.nordlyse.springrag.service.StoredDocument;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -12,6 +15,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -24,6 +28,9 @@ class DocumentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private DocumentController documentController;
 
     @MockitoBean
     private DocumentStorageService documentStorageService;
@@ -68,5 +75,19 @@ class DocumentControllerTest {
     void addRejectsARequestWithoutAFile() throws Exception {
         mockMvc.perform(multipart("/documents"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addRejectsAnEmptyFileList() {
+        assertThatThrownBy(() -> documentController.add(List.of()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("required");
+    }
+
+    @Test
+    void addRejectsANullFileList() {
+        assertThatThrownBy(() -> documentController.add(null))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("required");
     }
 }

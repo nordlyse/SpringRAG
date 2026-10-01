@@ -1,5 +1,7 @@
 package com.nordlyse.springrag.service;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -8,9 +10,12 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DocumentStorageServiceTest {
 
@@ -125,5 +130,57 @@ class DocumentStorageServiceTest {
         assertThatThrownBy(() -> service.add(file))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("name");
+    }
+
+    @Test
+    void addRejectsANullFile() {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+
+        assertThatThrownBy(() -> service.add(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("required");
+    }
+
+    @Test
+    void addRejectsABlankName() {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        MockMultipartFile file = new MockMultipartFile("file", "   ", "text/plain", "x".getBytes());
+
+        assertThatThrownBy(() -> service.add(file))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("name");
+    }
+
+    @Test
+    void addRejectsANameWithoutAnExtension() {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        MockMultipartFile file = new MockMultipartFile("file", "notes", "text/plain", "x".getBytes());
+
+        assertThatThrownBy(() -> service.add(file))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not allowed");
+    }
+
+    @Test
+    void addRejectsATrailingDot() {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        MockMultipartFile file = new MockMultipartFile("file", "notes.", "text/plain", "x".getBytes());
+
+        assertThatThrownBy(() -> service.add(file))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not allowed");
+    }
+
+    @Test
+    void addWrapsAReadFailure() throws Exception {
+        DocumentStorageService service = new DocumentStorageService(dataDirectory);
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.isEmpty()).thenReturn(false);
+        when(file.getOriginalFilename()).thenReturn("notes.txt");
+        when(file.getInputStream()).thenThrow(new IOException("unreadable"));
+
+        assertThatThrownBy(() -> service.add(file))
+                .isInstanceOf(UncheckedIOException.class)
+                .hasMessageContaining("Unable to store");
     }
 }
