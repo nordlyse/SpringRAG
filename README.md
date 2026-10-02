@@ -30,11 +30,12 @@ curl -s -F "file=@notes.txt" http://localhost:8080/documents
 
 Allowed types are PDF, PNG, JPEG, TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV.
 
-Send a question:
+Send a question. The reply is a server-sent event stream. `QuestionAnswerAdvisor` reads matching passages from pgvector and adds them to the prompt. `StreamingChatModel` then writes the answer in chunks:
 
 ```bash
-curl -s http://localhost:8080/chat \
+curl -N http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
+  -H 'Accept: text/event-stream' \
   -d '{"message":"What is in the documents?"}'
 ```
 
