@@ -66,22 +66,21 @@ Each record is JSON with `fileName`, `size`, and `mediaType`.
 
 ## Questions
 
-Send a question to the chat model:
+Send a question. The reply is a server-sent event stream. `QuestionAnswerAdvisor` reads matching passages from pgvector and adds them to the prompt. `StreamingChatModel` then writes the answer in chunks. A blank message returns `400`.
 
 ```bash
-curl -s http://localhost:8080/chat \
+curl -N http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
+  -H 'Accept: text/event-stream' \
   -d '{"message":"What is in the documents?"}'
 ```
-
-The reply is JSON with a `reply` field. A blank message returns `400`.
 
 The intended answer path uses two sources when the question needs them:
 
 1. Passages retrieved from the stored documents.
 2. Results returned by MCP servers that have been explicitly allowed. Any other MCP server stays unused.
 
-Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. Passage retrieval and MCP calls are not wired into `/chat` yet. The current endpoint sends the message to the Ollama chat model.
+Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. MCP calls are not wired into `/chat` yet. Uploaded files are stored on disk and in the `documents` table; they are not embedded into pgvector until a later step.
 
 ## Tests
 
