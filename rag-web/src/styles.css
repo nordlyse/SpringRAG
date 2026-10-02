@@ -1,0 +1,117 @@
+:root {
+  color: #1c1915;
+  background: #f3eee4;
+  font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(42rem, calc(100% - 2rem));
+  margin: 2.5rem auto 4rem;
+}
+
+header {
+  margin-bottom: 2rem;
+}
+
+.mark {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+}
+
+h1,
+h2 {
+  font-weight: 600;
+}
+
+h1 {
+  margin: 0.4rem 0;
+  font-size: 2.4rem;
+}
+
+.lede {
+  margin: 0;
+  max-width: 36rem;
+}
+
+section {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #fffaf3;
+  border: 1px solid #ddd4c4;
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #c9bfae;
+  background: #fff;
+}
+
+button {
+  justify-self: start;
+  padding: 0.55rem 0.9rem;
+  border: 0;
+  background: #0f6e56;
+  color: #f7f3ea;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #8aa399;
+  cursor: wait;
+}
+
+.error {
+  color: #8d2b1f;
+}
+
+ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid #eee6d8;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+}
+
+article {
+  min-height: 4.5rem;
+  margin-top: 1rem;
+  white-space: pre-wrap;
+}

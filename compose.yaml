@@ -48,6 +48,22 @@ services:
       pgvector:
         condition: service_healthy
 
+  rag-web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    environment:
+      SPRING_RAG_API: http://spring-rag:8080
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./rag-web:/app
+      - rag-web-modules:/app/node_modules
+    depends_on:
+      - spring-rag
+
 volumes:
   ollama:
   pgvector-data:
+  rag-web-modules:

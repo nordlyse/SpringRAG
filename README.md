@@ -16,10 +16,20 @@ Ollama and the `spring-rag` application are defined in `compose.yaml`. The Sprin
 docker compose up --build
 ```
 
-The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
+The application listens on port `8080`. The React app in `rag-web/` listens on port `5173`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
+```
+
+`rag-web` is a Vite development server. A source change reloads the page in the browser; it does not wait for a production bundle. React, React DOM, Vite, and `@vitejs/plugin-react` are MIT. The page calls `POST /documents` and `POST /chat`. Vite forwards those paths to the Spring API.
+
+To run the page outside Compose:
+
+```bash
+cd rag-web
+npm install
+npm run dev
 ```
 
 Upload a document:
