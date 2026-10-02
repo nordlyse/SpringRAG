@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { addDocuments, ask } from './api.js'
+import { GlassCard } from './components/GlassCard.jsx'
+import { PrismLights } from './components/PrismLights.jsx'
 
 const ACCEPT = '.pdf,.png,.jpeg,.jpg,.txt,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.csv'
 
@@ -46,65 +48,85 @@ export function App() {
   }
 
   return (
-    <main>
-      <header>
-        <p className="mark">SpringRAG</p>
-        <h1>Documents and questions</h1>
-        <p className="lede">
-          Upload a file, then ask a question. The page calls the Spring API and shows the streamed reply.
-        </p>
-      </header>
+    <>
+      <PrismLights />
+      <div className="scrim" aria-hidden="true" />
+      <main>
+        <header>
+          <p className="eyebrow">SpringRAG</p>
+          <h1 className="shiny">Documents and questions</h1>
+          <p className="lede">
+            Upload a file, then ask a question. The page calls the Spring API and shows the streamed reply.
+          </p>
+          <ul className="pills">
+            <li>Streamed answers</li>
+            <li>Local model</li>
+            <li>Document upload</li>
+          </ul>
+        </header>
 
-      <section>
-        <h2>Upload</h2>
-        <form onSubmit={onUpload}>
-          <label>
-            Files
-            <input
-              type="file"
-              name="file"
-              accept={ACCEPT}
-              multiple
-              required
-              onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
-            />
-          </label>
-          <button type="submit" disabled={uploading || files.length === 0}>
-            {uploading ? 'Uploading' : 'Upload'}
-          </button>
-        </form>
-        {uploadError ? <p className="error">{uploadError}</p> : null}
-        <ul>
-          {stored.map((document) => (
-            <li key={document.fileName}>
-              <strong>{document.fileName}</strong>
-              <span>{document.mediaType}</span>
-              <span>{document.size} bytes</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="grid">
+          <GlassCard title="Upload">
+            <form onSubmit={onUpload}>
+              <label className="drop">
+                Files
+                <input
+                  type="file"
+                  name="file"
+                  accept={ACCEPT}
+                  multiple
+                  required
+                  onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
+                />
+                <span className="file-action">Choose files</span>
+                <span className="hint">
+                  {files.length === 0 ? 'pdf, text, office, or image' : files.map((file) => file.name).join(', ')}
+                </span>
+              </label>
+              <button type="submit" disabled={uploading || files.length === 0}>
+                {uploading ? 'Uploading' : 'Upload'}
+              </button>
+            </form>
+            {uploadError ? <p className="error">{uploadError}</p> : null}
+            <ul className="files">
+              {stored.map((document) => (
+                <li key={document.fileName}>
+                  <strong>{document.fileName}</strong>
+                  <span>{document.mediaType}</span>
+                  <span>{document.size} bytes</span>
+                </li>
+              ))}
+            </ul>
+          </GlassCard>
 
-      <section>
-        <h2>Question</h2>
-        <form onSubmit={onAsk}>
-          <label>
-            Message
-            <textarea
-              name="message"
-              rows="4"
-              required
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-            />
-          </label>
-          <button type="submit" disabled={streaming || message.trim() === ''}>
-            {streaming ? 'Answering' : 'Ask'}
-          </button>
-        </form>
-        {chatError ? <p className="error">{chatError}</p> : null}
-        <article aria-live="polite">{answer}</article>
-      </section>
-    </main>
+          <GlassCard title="Question">
+            <form onSubmit={onAsk}>
+              <label>
+                Message
+                <textarea
+                  name="message"
+                  rows="5"
+                  required
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  placeholder="Ask about the uploaded documents"
+                />
+              </label>
+              <button type="submit" disabled={streaming || message.trim() === ''}>
+                {streaming ? 'Answering' : 'Ask'}
+              </button>
+            </form>
+          </GlassCard>
+        </div>
+
+        <GlassCard title="Reply">
+          {chatError ? <p className="error">{chatError}</p> : null}
+          <article aria-live="polite">
+            {answer ? answer : <span className="placeholder">The streamed reply appears here.</span>}
+            {streaming ? <span className="caret" /> : null}
+          </article>
+        </GlassCard>
+      </main>
+    </>
   )
 }

@@ -22,7 +22,7 @@ The application listens on port `8080`. The React app in `rag-web/` listens on p
 docker compose exec ollama ollama pull llama3.2
 ```
 
-`rag-web` is a Vite development server. A source change reloads the page in the browser; it does not wait for a production bundle. React, React DOM, Vite, and `@vitejs/plugin-react` are MIT. The page calls `POST /documents` and `POST /chat`. Vite forwards those paths to the Spring API.
+`rag-web` is a Vite development server. A source change reloads the page in the browser; it does not wait for a production bundle. React, React DOM, Vite, and `@vitejs/plugin-react` are MIT. The glass cards, shiny heading, and prism light background are original source in `rag-web` and add no further runtime dependency. The page calls `POST /documents` and `POST /chat`. Vite forwards those paths to the Spring API.
 
 To run the page outside Compose:
 
