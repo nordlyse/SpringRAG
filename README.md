@@ -53,13 +53,15 @@ curl -s -F "file=@notes.txt" http://localhost:8080/documents
 
 Allowed types are PDF, PNG, JPEG, TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV.
 
-Send a question. The reply is a server-sent event stream. `QuestionAnswerAdvisor` reads matching passages from pgvector and adds them to the prompt. `StreamingChatModel` then writes the answer in chunks:
+Send a question. The reply is a server-sent event stream. `QuestionAnswerAdvisor` reads matching passages from pgvector and adds them to the prompt. `StreamingChatModel` then writes the answer in chunks. A blank message returns `400`.
+
+Repeat `conversationId` to continue the same conversation. The application keeps the last 20 messages for that id and sends them with the next question. A missing id is used for that request only. The page stores one id in the browser tab. The window is Spring AI in-memory chat memory, which is Apache-2.0, so the stack does not add another store.
 
 ```bash
 curl -N http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
   -H 'Accept: text/event-stream' \
-  -d '{"message":"What is in the documents?"}'
+  -d '{"message":"What is in the documents?","conversationId":"demo-1"}'
 ```
 
 ## Documents
