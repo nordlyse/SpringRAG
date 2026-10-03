@@ -1,7 +1,14 @@
 package com.nordlyse.springrag.chat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.StreamingChatModel;
 import org.springframework.http.HttpStatus;
@@ -17,10 +24,16 @@ import reactor.core.publisher.Flux;
 public class ChatController {
 
     private final ChatClient chatClient;
+    private final ChatMemory chatMemory;
 
-    public ChatController(StreamingChatModel streamingChatModel, QuestionAnswerAdvisor questionAnswerAdvisor) {
+    public ChatController(
+            StreamingChatModel streamingChatModel,
+            ChatMemory chatMemory,
+            DocumentPassageAdvisor documentPassageAdvisor) {
+        this.chatMemory = chatMemory;
         this.chatClient = ChatClient.builder(chatModel(streamingChatModel))
-                .defaultAdvisors(questionAnswerAdvisor)
+                .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
+                .defaultAdvisors(documentPassageAdvisor)
                 .build();
     }
 
@@ -29,7 +42,35 @@ public class ChatController {
         if (request == null || request.message() == null || request.message().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message is required.");
         }
-        return chatClient.prompt().user(request.message()).stream().content();
+        String conversationId = conversationId(request.conversationId());
+        chatMemory.add(conversationId, new UserMessage(request.message()));
+        List<Message> earlier = earlierMessages(chatMemory.get(conversationId));
+        StringBuilder reply = new StringBuilder();
+        return chatClient.prompt()
+                .messages(earlier)
+                .user(request.message())
+                .stream()
+                .content()
+                .doOnNext(reply::append)
+                .doOnComplete(() -> chatMemory.add(conversationId, new AssistantMessage(reply.toString())));
+    }
+
+    private static List<Message> earlierMessages(List<Message> history) {
+        if (history.size() < 2) {
+            return List.of();
+        }
+        return new ArrayList<>(history.subList(0, history.size() - 1));
+    }
+
+    private static String conversationId(String requestedId) {
+        if (requestedId == null || requestedId.isBlank()) {
+            return UUID.randomUUID().toString();
+        }
+        String conversationId = requestedId.trim();
+        if (conversationId.length() > 80 || !conversationId.matches("[A-Za-z0-9_-]+")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Conversation id is not allowed.");
+        }
+        return conversationId;
     }
 
     private static ChatModel chatModel(StreamingChatModel streamingChatModel) {

@@ -13,6 +13,8 @@ export async function addDocuments(files) {
   return response.json()
 }
 
+const CONVERSATION_KEY = 'springrag.conversationId'
+
 export async function ask(message, onChunk) {
   const response = await fetch('/chat', {
     method: 'POST',
@@ -20,7 +22,7 @@ export async function ask(message, onChunk) {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, conversationId: conversationId() }),
   })
   if (!response.ok) {
     throw new Error(await failureText(response))
@@ -56,6 +58,16 @@ async function readEventStream(response, onChunk) {
   if (tail) {
     onChunk(tail)
   }
+}
+
+function conversationId() {
+  const existing = sessionStorage.getItem(CONVERSATION_KEY)
+  if (existing) {
+    return existing
+  }
+  const id = crypto.randomUUID()
+  sessionStorage.setItem(CONVERSATION_KEY, id)
+  return id
 }
 
 function eventText(event) {

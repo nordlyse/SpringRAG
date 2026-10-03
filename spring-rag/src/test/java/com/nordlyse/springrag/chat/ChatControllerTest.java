@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Flux;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -106,5 +108,64 @@ class ChatControllerTest {
 
         verifyNoInteractions(chatModel);
         verifyNoInteractions(vectorStore);
+    }
+
+    @Test
+    void answerRemembersAnEarlierTurnInTheSameConversation() throws Exception {
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(
+                Flux.just(new ChatResponse(List.of(new Generation(new AssistantMessage("Noted."))))),
+                Flux.just(new ChatResponse(List.of(new Generation(new AssistantMessage("Jakob"))))));
+
+        dispatch("{\"message\":\"My name is Jakob\",\"conversationId\":\"session-1\"}");
+        dispatch("{\"message\":\"What is my name?\",\"conversationId\":\"session-1\"}");
+
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel, times(2)).stream(prompt.capture());
+        assertThat(prompt.getAllValues().get(1).getUserMessage().getText()).isEqualTo("What is my name?");
+        assertThat(texts(prompt.getAllValues().get(1))).anyMatch(text -> text.contains("My name is Jakob"));
+        assertThat(texts(prompt.getAllValues().get(1))).anyMatch(text -> text.contains("Noted."));
+        assertThat(texts(prompt.getAllValues().get(1))).noneMatch(text -> text.contains("Context information"));
+    }
+
+    @Test
+    void answerKeepsADifferentConversationSeparate() throws Exception {
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("Noted."))))));
+
+        dispatch("{\"message\":\"My name is Jakob\",\"conversationId\":\"session-1\"}");
+        dispatch("{\"message\":\"Hello\",\"conversationId\":\"session-2\"}");
+
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel, times(2)).stream(prompt.capture());
+        assertThat(texts(prompt.getAllValues().get(1))).noneMatch(text -> text.contains("Jakob"));
+    }
+
+    @Test
+    void answerRejectsAConversationIdWithSpaces() throws Exception {
+        mockMvc.perform(post("/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.TEXT_EVENT_STREAM)
+                        .content("{\"message\":\"Hello\",\"conversationId\":\"bad id\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(chatModel);
+    }
+
+    private void dispatch(String json) throws Exception {
+        MvcResult result = mockMvc.perform(post("/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.TEXT_EVENT_STREAM)
+                        .content(json))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        mockMvc.perform(asyncDispatch(result)).andExpect(status().isOk());
+    }
+
+    private static java.util.List<String> texts(Prompt prompt) {
+        return prompt.getInstructions().stream().map(Message::getText).toList();
     }
 }
