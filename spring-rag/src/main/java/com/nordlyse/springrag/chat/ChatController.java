@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -30,10 +29,11 @@ public class ChatController {
     public ChatController(
             StreamingChatModel streamingChatModel,
             ChatMemory chatMemory,
-            QuestionAnswerAdvisor questionAnswerAdvisor) {
+            DocumentPassageAdvisor documentPassageAdvisor) {
         this.chatMemory = chatMemory;
         this.chatClient = ChatClient.builder(chatModel(streamingChatModel))
-                .defaultAdvisors(questionAnswerAdvisor)
+                .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
+                .defaultAdvisors(documentPassageAdvisor)
                 .build();
     }
 

@@ -123,8 +123,10 @@ class ChatControllerTest {
 
         ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
         verify(chatModel, times(2)).stream(prompt.capture());
+        assertThat(prompt.getAllValues().get(1).getUserMessage().getText()).isEqualTo("What is my name?");
         assertThat(texts(prompt.getAllValues().get(1))).anyMatch(text -> text.contains("My name is Jakob"));
         assertThat(texts(prompt.getAllValues().get(1))).anyMatch(text -> text.contains("Noted."));
+        assertThat(texts(prompt.getAllValues().get(1))).noneMatch(text -> text.contains("Context information"));
     }
 
     @Test
