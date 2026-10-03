@@ -11,18 +11,40 @@ SpringRAG is a retrieval-augmented question system built with Ollama, pgvector, 
 
 ## Run
 
-Ollama, pgvector, and the application are defined in `compose.yaml`.
+Ollama, pgvector, `spring-rag`, and the web app are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
+
+Start the stack:
 
 ```bash
 docker compose up --build
 ```
 
-The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to PostgreSQL at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. Pull the models once Ollama is up:
+The API listens on port `8080`. Inside Compose it talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. Pull the chat and embedding models once Ollama is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
 docker compose exec ollama ollama pull nomic-embed-text
 ```
+
+The chat model name defaults to `llama3.2`. The embedding model name defaults to `nomic-embed-text`.
+
+### Start the web application
+
+The page lives in `rag-web/` and listens on port `5173`. It is a Vite development server. A source change reloads the page in the browser; it does not wait for a production bundle. React, React DOM, Vite, and `@vitejs/plugin-react` are MIT. The glass cards, shiny heading, and WebGL prism background are original source in `rag-web` and add no further runtime dependency.
+
+`docker compose up --build` already starts this page. Open [http://localhost:5173](http://localhost:5173).
+
+To start only the page on the host, leave the API listening on port `8080`, then run:
+
+```bash
+cd rag-web
+npm install
+npm run dev
+```
+
+Node.js 20 or newer is enough for this Vite version. The dev server prints a local URL, normally [http://localhost:5173](http://localhost:5173). Vite forwards `POST /documents` and `POST /chat` to `http://localhost:8080`, or to `SPRING_RAG_API` when that variable is set. In Compose that variable is `http://spring-rag:8080`.
+
+On the page, choose a file and upload it, then type a question. The reply streams into the page.
 
 ## Documents
 
