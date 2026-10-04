@@ -15,8 +15,10 @@ spring:
         pull-model-strategy: never
       chat:
         model: ${SPRING_AI_OLLAMA_CHAT_MODEL:llama3.2}
+        keep-alive: "-1s"
       embedding:
         model: ${SPRING_AI_OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+        keep-alive: "-1s"
     vectorstore:
       pgvector:
         initialize-schema: true
@@ -29,6 +31,7 @@ spring:
 spring-rag:
   data-directory: ${SPRING_RAG_DATA_DIRECTORY:data}
   directory-listener: true
+  keep-models-loaded: true
   similarity-threshold: 0.32
   database:
     url: ${SPRING_RAG_DATABASE_URL:jdbc:postgresql://localhost:5432/springrag}
