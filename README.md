@@ -16,11 +16,14 @@ Ollama and the `spring-rag` application are defined in `compose.yaml`. The Sprin
 docker compose up --build
 ```
 
-The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. Pull that model once the Ollama service is up:
+The application listens on port `8080`. It talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. The chat model name defaults to `llama3.2`. The embedding model name defaults to `nomic-embed-text`. Pull both once Ollama is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
+docker compose exec ollama ollama pull nomic-embed-text
 ```
+
+The page listens on port `5173`. `docker compose up --build` starts it. Open [http://localhost:5173](http://localhost:5173). While a file is scanned the page says so, and when the scan finishes it says that document is ready to use.
 
 Upload a document:
 
@@ -30,11 +33,12 @@ curl -s -F "file=@notes.txt" http://localhost:8080/documents
 
 Allowed types are PDF, PNG, JPEG, TXT, DOC, DOCX, XLS, XLSX, PPTX, PPT, and CSV.
 
-Send a question:
+Send a question. The reply is a stream, so words arrive while the model is still writing:
 
 ```bash
-curl -s http://localhost:8080/chat \
+curl -N http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
+  -H 'Accept: text/event-stream' \
   -d '{"message":"What is in the documents?"}'
 ```
 
@@ -54,7 +58,9 @@ The system reads the following file types and uses their content when answering:
 - PPT
 - CSV
 
-Text is taken from each file, split into passages, embedded, and inserted into pgvector. PNG and JPEG files are read as images so their visible content can be used as well. A question is answered from the passages retrieved for that question.
+Text is taken from each allowed file, split into token passages, and written to pgvector. A directory listener watches `spring-rag/data`, so a file saved there is scanned the same way as a web upload. PNG and JPEG files are scanned for any text they already contain.
+
+A question searches pgvector first. When a passage matches, the answer uses that passage. When nothing matches, the model answers from its own knowledge.
 
 ## Allowed MCP servers
 
