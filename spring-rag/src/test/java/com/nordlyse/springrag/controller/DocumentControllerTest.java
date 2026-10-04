@@ -1,6 +1,11 @@
 package com.nordlyse.springrag.controller;
 
+import java.util.List;
+
+import com.nordlyse.springrag.service.DocumentIngestion;
 import com.nordlyse.springrag.service.DocumentStorageService;
+import com.nordlyse.springrag.service.IngestionBoard;
+import com.nordlyse.springrag.service.IngestionNotice;
 import com.nordlyse.springrag.service.StoredDocument;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +35,12 @@ class DocumentControllerTest {
     @MockitoBean
     private DocumentStorageService documentStorageService;
 
+    @MockitoBean
+    private DocumentIngestion documentIngestion;
+
+    @MockitoBean
+    private IngestionBoard ingestionBoard;
+
     @Test
     void addAcceptsMultipartFile() throws Exception {
         when(documentStorageService.add(any())).thenReturn(new StoredDocument("notes.txt", 5, "text/plain"));
@@ -38,6 +51,18 @@ class DocumentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].fileName").value("notes.txt"))
                 .andExpect(jsonPath("$[0].size").value(5));
+        verify(documentIngestion).ingestStored("notes.txt");
+    }
+
+    @Test
+    void noticesReturnsScanMessages() throws Exception {
+        when(ingestionBoard.notices()).thenReturn(List.of(
+                new IngestionNotice("cv.pdf", "ready", "cv.pdf was scanned and is ready to use.")));
+
+        mockMvc.perform(get("/documents/ingestion"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].state").value("ready"))
+                .andExpect(jsonPath("$[0].message").value("cv.pdf was scanned and is ready to use."));
     }
 
     @Test

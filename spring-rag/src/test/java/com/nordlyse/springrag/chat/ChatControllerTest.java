@@ -77,6 +77,26 @@ class ChatControllerTest {
     }
 
     @Test
+    void answerUsesEmploymentLinesWhenTheQuestionAsksForWorkplaces() throws Exception {
+        when(vectorStore.similaritySearch(any(SearchRequest.class)))
+                .thenReturn(List.of(
+                        new Document("Certificate 2025 only."),
+                        new Document("Systemutvikler, Trondheim, Aug.2020 – Feb.2025. Worked there.")));
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("Trondheim."))))));
+
+        dispatch("{\"message\":\"Where did I work?\"}");
+
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).stream(prompt.capture());
+        String text = prompt.getValue().getUserMessage().getText();
+        assertThat(text).contains("Trondheim");
+        assertThat(text).contains("employer and place");
+        assertThat(text).doesNotContain("Certificate 2025");
+    }
+
+    @Test
     void answerCompletesWhenTheModelReturnsNoChunks() throws Exception {
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
         when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());

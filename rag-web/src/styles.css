@@ -231,22 +231,26 @@ button:disabled {
   color: #fecaca;
 }
 
-.files {
-  margin: 1rem 0 0;
+.notices {
+  margin: 0.8rem 0 0;
   padding: 0;
   list-style: none;
 }
 
-.files li {
-  display: grid;
-  gap: 0.12rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.88rem;
+.notices li {
+  margin: 0.35rem 0;
 }
 
-.files span {
-  color: #b7b1c7;
+.notices .scanning {
+  color: #ddd6fe;
+}
+
+.notices .ready {
+  color: #a7f3d0;
+}
+
+.notices .failed {
+  color: #fecaca;
 }
 
 article {

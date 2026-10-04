@@ -3,6 +3,7 @@ package com.nordlyse.springrag.chat;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,7 +26,9 @@ public class RagChatConfig {
     }
 
     @Bean
-    DocumentPassageAdvisor documentPassageAdvisor(VectorStore vectorStore) {
-        return new DocumentPassageAdvisor(vectorStore);
+    DocumentPassageAdvisor documentPassageAdvisor(
+            VectorStore vectorStore,
+            @Value("${spring-rag.similarity-threshold:0.32}") double similarityThreshold) {
+        return new DocumentPassageAdvisor(vectorStore, similarityThreshold);
     }
 }
