@@ -3,8 +3,11 @@ package com.nordlyse.springrag.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.nordlyse.springrag.service.DocumentIngestion;
 import com.nordlyse.springrag.service.DocumentNotFoundException;
 import com.nordlyse.springrag.service.DocumentService;
+import com.nordlyse.springrag.service.IngestionBoard;
+import com.nordlyse.springrag.service.IngestionNotice;
 import com.nordlyse.springrag.service.StoredDocument;
 
 import org.junit.jupiter.api.Test;
@@ -41,6 +44,12 @@ class DocumentControllerTest {
     @MockitoBean
     private DocumentService documentService;
 
+    @MockitoBean
+    private DocumentIngestion documentIngestion;
+
+    @MockitoBean
+    private IngestionBoard ingestionBoard;
+
     @Test
     void listReturnsStoredDocuments() throws Exception {
         when(documentService.list()).thenReturn(List.of(new StoredDocument("notes.txt", 5, "text/plain")));
@@ -69,6 +78,17 @@ class DocumentControllerTest {
     }
 
     @Test
+    void noticesReturnsScanMessages() throws Exception {
+        when(ingestionBoard.notices()).thenReturn(List.of(
+                new IngestionNotice("cv.pdf", "ready", "cv.pdf was scanned and is ready to use.")));
+
+        mockMvc.perform(get("/documents/ingestion"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].state").value("ready"))
+                .andExpect(jsonPath("$[0].message").value("cv.pdf was scanned and is ready to use."));
+    }
+
+    @Test
     void addAcceptsMultipartFile() throws Exception {
         when(documentService.add(any())).thenReturn(new StoredDocument("notes.txt", 5, "text/plain"));
         MockMultipartFile file = new MockMultipartFile(
@@ -78,6 +98,7 @@ class DocumentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].fileName").value("notes.txt"))
                 .andExpect(jsonPath("$[0].size").value(5));
+        verify(documentIngestion).ingestStored("notes.txt");
     }
 
     @Test
@@ -135,6 +156,7 @@ class DocumentControllerTest {
                 }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size").value(9));
+        verify(documentIngestion).ingestStored("notes.txt");
     }
 
     @Test
@@ -155,6 +177,7 @@ class DocumentControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(documentService).remove("notes.txt");
+        verify(documentIngestion).forget("notes.txt");
     }
 
     @Test

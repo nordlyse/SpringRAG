@@ -26,13 +26,13 @@ docker compose exec ollama ollama pull llama3.2
 docker compose exec ollama ollama pull nomic-embed-text
 ```
 
-The chat model name defaults to `llama3.2`. The embedding model name defaults to `nomic-embed-text`.
+The chat model name defaults to `llama3.2`. The embedding model name defaults to `nomic-embed-text`. Both stay in memory until the application stops.
 
 ### Start the web application
 
 The page lives in `rag-web/` and listens on port `5173`. It is a Vite development server. A source change reloads the page in the browser; it does not wait for a production bundle. React, React DOM, Vite, and `@vitejs/plugin-react` are MIT. The glass cards, shiny heading, and WebGL prism background are original source in `rag-web` and add no further runtime dependency.
 
-`docker compose up --build` already starts this page. Open [http://localhost:5173](http://localhost:5173).
+`docker compose up --build` already starts this page. Open [http://localhost:5173](http://localhost:5173). While a file uploaded from the page is scanned the page says so, and when the scan finishes it says that document is ready to use. That notice clears on the next page load.
 
 To start only the page on the host, leave the API listening on port `8080`, then run:
 
@@ -86,6 +86,8 @@ curl -s -X DELETE -o /dev/null -w "%{http_code}\n" http://localhost:8080/documen
 
 Each record is JSON with `fileName`, `size`, and `mediaType`.
 
+Text from each allowed file is split into token passages and written to pgvector. A directory listener watches `spring-rag/data`, so a file saved there is scanned the same way as a web upload. PNG and JPEG files are scanned for any text they already contain. `GET /documents/ingestion` reports whether a scan is running, ready, or failed.
+
 ## Questions
 
 Send a question. The reply is a server-sent event stream. Matching passages from pgvector are added to the prompt when the search finds any. A question with no matching passages stays as written, and earlier turns in the same conversation stay available. `StreamingChatModel` then writes the answer in chunks. A blank message returns `400`.
@@ -104,7 +106,7 @@ The intended answer path uses two sources when the question needs them:
 1. Passages retrieved from the stored documents.
 2. Results returned by MCP servers that have been explicitly allowed. Any other MCP server stays unused.
 
-Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. MCP calls are not wired into `/chat` yet. Uploaded files are stored on disk and in the `documents` table; they are not embedded into pgvector until a later step.
+Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. MCP calls are not wired into `/chat` yet. A question searches pgvector first. When a passage matches, the answer uses that passage. When nothing matches, the model answers from its own knowledge.
 
 ## Tests
 

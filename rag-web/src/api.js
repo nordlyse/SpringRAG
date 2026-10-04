@@ -15,6 +15,14 @@ export async function addDocuments(files) {
 
 const CONVERSATION_KEY = 'springrag.conversationId'
 
+export async function ingestionNotices() {
+  const response = await fetch('/documents/ingestion')
+  if (!response.ok) {
+    throw new Error(await failureText(response))
+  }
+  return response.json()
+}
+
 export async function ask(message, onChunk) {
   const response = await fetch('/chat', {
     method: 'POST',

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { addDocuments, ask } from './api.js'
+import { addDocuments, ask, ingestionNotices } from './api.js'
 import { GlassCard } from './components/GlassCard.jsx'
 import { PrismLights } from './components/PrismLights.jsx'
 
@@ -7,9 +7,9 @@ const ACCEPT = '.pdf,.png,.jpeg,.jpg,.txt,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.csv'
 
 export function App() {
   const [files, setFiles] = useState([])
-  const [stored, setStored] = useState([])
   const [uploadError, setUploadError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [notices, setNotices] = useState([])
   const [message, setMessage] = useState('')
   const [answer, setAnswer] = useState('')
   const [chatError, setChatError] = useState('')
@@ -21,7 +21,13 @@ export function App() {
     setUploading(true)
     try {
       const added = await addDocuments(files)
-      setStored((current) => [...added, ...current])
+      const names = new Set(added.map((document) => document.fileName))
+      const board = await ingestionNotices()
+      const fresh = board.filter((notice) => names.has(notice.fileName))
+      setNotices((current) => [
+        ...fresh,
+        ...current.filter((notice) => !names.has(notice.fileName)),
+      ])
       setFiles([])
       event.target.reset()
     } catch (error) {
@@ -84,16 +90,14 @@ export function App() {
                 </span>
               </label>
               <button type="submit" disabled={uploading || files.length === 0}>
-                {uploading ? 'Uploading' : 'Upload'}
+                {uploading ? 'Scanning' : 'Upload'}
               </button>
             </form>
             {uploadError ? <p className="error">{uploadError}</p> : null}
-            <ul className="files">
-              {stored.map((document) => (
-                <li key={document.fileName}>
-                  <strong>{document.fileName}</strong>
-                  <span>{document.mediaType}</span>
-                  <span>{document.size} bytes</span>
+            <ul className="notices" aria-live="polite">
+              {notices.map((notice) => (
+                <li key={notice.fileName} className={notice.state}>
+                  {notice.message}
                 </li>
               ))}
             </ul>
@@ -122,7 +126,7 @@ export function App() {
         <GlassCard title="Reply">
           {chatError ? <p className="error">{chatError}</p> : null}
           <article aria-live="polite">
-            {answer ? answer : <span className="placeholder">The streamed reply appears here.</span>}
+            {answer ? answer : <span className="placeholder">The reply streams here.</span>}
             {streaming ? <span className="caret" /> : null}
           </article>
         </GlassCard>

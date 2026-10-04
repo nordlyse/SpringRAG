@@ -10,7 +10,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/documents': api,
-      '/chat': api,
+      '/chat': {
+        target: api,
+        configure(proxy) {
+          proxy.on('proxyRes', (_proxyRes, _req, res) => {
+            res.setHeader('Cache-Control', 'no-cache')
+            res.setHeader('X-Accel-Buffering', 'no')
+          })
+        },
+      },
     },
     watch: {
       usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
