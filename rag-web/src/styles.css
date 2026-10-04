@@ -253,24 +253,6 @@ button:disabled {
   color: #fecaca;
 }
 
-.files {
-  margin: 1rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.files li {
-  display: grid;
-  gap: 0.12rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.88rem;
-}
-
-.files span {
-  color: #b7b1c7;
-}
-
 article {
   min-height: 6.5rem;
   white-space: pre-wrap;

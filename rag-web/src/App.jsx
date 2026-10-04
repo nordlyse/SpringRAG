@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { addDocuments, ask, ingestionNotices } from './api.js'
 import { GlassCard } from './components/GlassCard.jsx'
 import { PrismLights } from './components/PrismLights.jsx'
@@ -7,7 +7,6 @@ const ACCEPT = '.pdf,.png,.jpeg,.jpg,.txt,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.csv'
 
 export function App() {
   const [files, setFiles] = useState([])
-  const [stored, setStored] = useState([])
   const [uploadError, setUploadError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [notices, setNotices] = useState([])
@@ -16,33 +15,19 @@ export function App() {
   const [chatError, setChatError] = useState('')
   const [streaming, setStreaming] = useState(false)
 
-  useEffect(() => {
-    let stopped = false
-    async function refresh() {
-      try {
-        const next = await ingestionNotices()
-        if (!stopped) {
-          setNotices(next)
-        }
-      } catch {
-        // Keep the last notice when the API is briefly unavailable.
-      }
-    }
-    refresh()
-    const timer = setInterval(refresh, 1000)
-    return () => {
-      stopped = true
-      clearInterval(timer)
-    }
-  }, [])
-
   async function onUpload(event) {
     event.preventDefault()
     setUploadError('')
     setUploading(true)
     try {
       const added = await addDocuments(files)
-      setStored((current) => [...added, ...current])
+      const names = new Set(added.map((document) => document.fileName))
+      const board = await ingestionNotices()
+      const fresh = board.filter((notice) => names.has(notice.fileName))
+      setNotices((current) => [
+        ...fresh,
+        ...current.filter((notice) => !names.has(notice.fileName)),
+      ])
       setFiles([])
       event.target.reset()
     } catch (error) {
@@ -113,15 +98,6 @@ export function App() {
               {notices.map((notice) => (
                 <li key={notice.fileName} className={notice.state}>
                   {notice.message}
-                </li>
-              ))}
-            </ul>
-            <ul className="files">
-              {stored.map((document) => (
-                <li key={document.fileName}>
-                  <strong>{document.fileName}</strong>
-                  <span>{document.mediaType}</span>
-                  <span>{document.size} bytes</span>
                 </li>
               ))}
             </ul>
