@@ -64,6 +64,37 @@ curl -N http://localhost:8080/chat \
   -d '{"message":"What is in the documents?","conversationId":"demo-1"}'
 ```
 
+## Chat tools
+
+`/chat` can call two Spring AI tools on `UserDirectory`. Both are marked with `@Tool` and registered on the chat client, so the model calls them when a question is about a user or a role. The answer must come from the tool result. The model is told not to invent a user or a role.
+
+| Tool | What it does |
+| --- | --- |
+| `findUser` | Finds one test user by user id or by username. Either value is enough. Pass an empty string for the key you do not have. When both are present they must belong to the same user. |
+| `rolesForUser` | Returns the roles of that user, again by user id or by username. |
+
+The rows live in the same PostgreSQL database as pgvector. `JdbcUserStore` adds the tables when they are missing:
+
+- `users` stores `id` as the primary key and `username` as a unique key. Each value identifies at most one user.
+- `roles` stores `user_id` and `role_name`. `user_id` references `users`. The primary key is `(user_id, role_name)`, so the same role is not stored twice for one user.
+
+On startup the application inserts these test users when they are not already there. Set `spring-rag.seed-test-users` to `false` to skip that step.
+
+| Id | Username | Roles |
+| --- | --- | --- |
+| `1001` | `ada` | `ADMIN` |
+| `1002` | `nora` | `EDITOR`, `VIEWER` |
+| `1003` | `milo` | `VIEWER` |
+
+Ask for one of them by id or by username:
+
+```bash
+curl -N http://localhost:8080/chat \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: text/event-stream' \
+  -d '{"message":"Which roles does nora have?","conversationId":"demo-1"}'
+```
+
 ## Documents
 
 The system reads the following file types and uses their content when answering:
