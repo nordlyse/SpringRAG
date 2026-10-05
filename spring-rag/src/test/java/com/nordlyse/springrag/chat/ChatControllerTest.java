@@ -83,6 +83,45 @@ class ChatControllerTest {
     }
 
     @Test
+    void answerKeepsAnotherPersonsWorkplacesOutWhenTheQuestionNamesSomeone() throws Exception {
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenAnswer(invocation -> {
+            SearchRequest request = invocation.getArgument(0);
+            if ("hilal".equalsIgnoreCase(request.getQuery())) {
+                return List.of(Document.builder()
+                        .text("Hilal Demir")
+                        .metadata("file_name", "hilal.pdf")
+                        .build());
+            }
+            if (request.hasFilterExpression()) {
+                return List.of(Document.builder()
+                        .text("Systemutvikler – Nordlyse, Oslo, Aug.2021 – Feb.2024. Worked there.")
+                        .metadata("file_name", "hilal.pdf")
+                        .build());
+            }
+            return List.of(
+                    Document.builder()
+                            .text("Systemutvikler, Trondheim, Aug.2020 – Feb.2025. Worked there.")
+                            .metadata("file_name", "jakob.pdf")
+                            .build(),
+                    Document.builder()
+                            .text("Systemutvikler – Nordlyse, Oslo, Aug.2021 – Feb.2024. Worked there.")
+                            .metadata("file_name", "hilal.pdf")
+                            .build());
+        });
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(chunk("Oslo.")));
+
+        String body = dispatch("{\"message\":\"Ben Hilalim, nerede calistim?\"}");
+
+        assertThat(body).contains("Oslo.");
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).stream(prompt.capture());
+        String text = prompt.getValue().getUserMessage().getText();
+        assertThat(text).contains("Oslo");
+        assertThat(text).contains("Hilal");
+        assertThat(text).doesNotContain("Trondheim");
+    }
+
+    @Test
     void answerCompletesWhenTheModelReturnsNoChunks() throws Exception {
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
         when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.empty());
