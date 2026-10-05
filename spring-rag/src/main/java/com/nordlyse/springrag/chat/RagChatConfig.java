@@ -18,6 +18,10 @@ public class RagChatConfig {
             When they ask for one of those facts, answer with that fact in one short sentence, in their language.
             Do not ask them to provide context, history, or documents for a fact they already stated.
             Use document passages only when the question is about those documents.
+            When they ask for a user by id or username, call findUser.
+            When they ask which roles a user has, call rolesForUser.
+            Answer from the tool result in their language.
+            Do not invent a user or a role.
             """;
 
     @Bean

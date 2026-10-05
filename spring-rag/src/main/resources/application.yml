@@ -33,6 +33,7 @@ spring-rag:
   directory-listener: true
   keep-models-loaded: true
   similarity-threshold: 0.32
+  seed-test-users: true
   database:
     url: ${SPRING_RAG_DATABASE_URL:jdbc:postgresql://localhost:5432/springrag}
     username: ${SPRING_RAG_DATABASE_USERNAME:springrag}
