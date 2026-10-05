@@ -56,6 +56,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-vector-store-advisor</artifactId>
         </dependency>
+        <!-- Apache-2.0. Writes the user and role tables in PostgreSQL. -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
         <!-- Apache-2.0. Reads text from PDF files. -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

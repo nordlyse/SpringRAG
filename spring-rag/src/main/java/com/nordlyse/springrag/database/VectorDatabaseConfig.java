@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 @EnableConfigurationProperties(VectorDatabaseSettings.class)
@@ -30,5 +31,10 @@ public class VectorDatabaseConfig {
             hikari.setInitializationFailTimeout(-1);
         }
         return dataSource;
+    }
+
+    @Bean
+    JdbcTemplate applicationJdbc(DataSource vectorDatabase) {
+        return new JdbcTemplate(vectorDatabase);
     }
 }

@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nordlyse.springrag.user.UserDirectory;
+
 import reactor.core.publisher.Flux;
 
 @RestController
@@ -29,11 +31,13 @@ public class ChatController {
     public ChatController(
             StreamingChatModel streamingChatModel,
             ChatMemory chatMemory,
-            DocumentPassageAdvisor documentPassageAdvisor) {
+            DocumentPassageAdvisor documentPassageAdvisor,
+            UserDirectory userDirectory) {
         this.chatMemory = chatMemory;
         this.chatClient = ChatClient.builder(chatModel(streamingChatModel))
                 .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
                 .defaultAdvisors(documentPassageAdvisor)
+                .defaultTools(userDirectory)
                 .build();
     }
 

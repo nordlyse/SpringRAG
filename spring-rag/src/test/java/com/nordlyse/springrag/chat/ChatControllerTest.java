@@ -12,8 +12,12 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+
+import com.nordlyse.springrag.user.UserDirectory;
+import com.nordlyse.springrag.user.UserStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -36,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ChatController.class)
-@Import(RagChatConfig.class)
+@Import({RagChatConfig.class, UserDirectory.class})
 class ChatControllerTest {
 
     @Autowired
@@ -47,6 +51,10 @@ class ChatControllerTest {
 
     @MockitoBean
     private VectorStore vectorStore;
+
+    @MockitoBean
+    @SuppressWarnings("unused")
+    private UserStore userStore;
 
     @Test
     void answerStreamsTheModelReplyWithRetrievedContext() throws Exception {
@@ -74,6 +82,9 @@ class ChatControllerTest {
         ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
         verify(chatModel).stream(prompt.capture());
         assertThat(prompt.getValue().getUserMessage().getText()).contains("The stored note mentions a river.");
+        assertThat(((ToolCallingChatOptions) prompt.getValue().getOptions()).getToolCallbacks())
+                .extracting(callback -> callback.getToolDefinition().name())
+                .contains("findUser", "rolesForUser");
     }
 
     @Test
