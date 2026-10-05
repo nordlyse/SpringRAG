@@ -66,7 +66,7 @@ curl -N http://localhost:8080/chat \
 
 ## Chat tools
 
-`/chat` can call two Spring AI tools on `UserDirectory`. Both are marked with `@Tool` and registered on the chat client, so the model calls them when a question is about a user or a role. The answer must come from the tool result. The model is told not to invent a user or a role.
+`/chat` can call two tools on `UserDirectory` when a question is about a user or a role. Each method is marked with `@Tool` for the chat client and with `@McpTool` for the MCP server. The server name is `spring-rag-users`. It speaks streamable HTTP at `/mcp` and is the allowed MCP server for these lookups. The answer must come from the tool result. The model is told not to invent a user or a role.
 
 | Tool | What it does |
 | --- | --- |
