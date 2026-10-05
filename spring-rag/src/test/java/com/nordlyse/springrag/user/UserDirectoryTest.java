@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 
@@ -61,13 +62,17 @@ class UserDirectoryTest {
     }
 
     @Test
-    void bothLookupMethodsAreChatTools() {
+    void bothLookupMethodsAreChatTools() throws Exception {
         ToolCallback[] tools = ToolCallbacks.from(users);
 
         assertThat(tools).extracting(tool -> tool.getToolDefinition().name())
                 .containsExactly("findUser", "rolesForUser");
         assertThat(tools[0].getToolDefinition().description()).contains("primary keys");
         assertThat(tools[1].getToolDefinition().description()).contains("roles");
+        assertThat(UserDirectory.class.getMethod("findUser", String.class, String.class)
+                .getAnnotation(McpTool.class).name()).isEqualTo("findUser");
+        assertThat(UserDirectory.class.getMethod("rolesForUser", String.class, String.class)
+                .getAnnotation(McpTool.class).name()).isEqualTo("rolesForUser");
     }
 
     @Test

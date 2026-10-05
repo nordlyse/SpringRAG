@@ -61,6 +61,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
+        <!-- Apache-2.0. Exposes the user and role tools as an MCP server. Transitive MCP Java SDK is MIT. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+        </dependency>
         <!-- Apache-2.0. Reads text from PDF files. -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

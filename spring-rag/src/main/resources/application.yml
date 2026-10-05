@@ -19,6 +19,17 @@ spring:
       embedding:
         model: ${SPRING_AI_OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
         keep-alive: "-1s"
+    mcp:
+      server:
+        name: spring-rag-users
+        version: 0.1.0
+        protocol: STREAMABLE
+        instructions: Look up a test user by id or username, and return that user's roles.
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
     vectorstore:
       pgvector:
         initialize-schema: true

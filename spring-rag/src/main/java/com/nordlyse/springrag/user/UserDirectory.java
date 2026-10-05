@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -17,12 +19,17 @@ public class UserDirectory {
         this.users = users;
     }
 
+    @McpTool(
+            name = "findUser",
+            description = "Find one test user by user id or by username. User id and username are both primary keys, so either value identifies at most one user. Pass an empty string for the key you do not have. When both keys are present they must belong to the same user.")
     @Tool(
             name = "findUser",
             description = "Find one test user by user id or by username. User id and username are both primary keys, so either value identifies at most one user. Pass an empty string for the key you do not have. When both keys are present they must belong to the same user.")
     public UserMatch findUser(
+            @McpToolParam(description = "User id. Primary key. Use an empty string when the id is unknown.", required = false)
             @ToolParam(description = "User id. Primary key. Use an empty string when the id is unknown.", required = false)
             String userId,
+            @McpToolParam(description = "Username. Primary key. Use an empty string when the username is unknown.", required = false)
             @ToolParam(description = "Username. Primary key. Use an empty string when the username is unknown.", required = false)
             String username) {
         UserAccount account = accountFor(userId, username);
@@ -32,12 +39,17 @@ public class UserDirectory {
         return new UserMatch(account.id(), account.username(), true);
     }
 
+    @McpTool(
+            name = "rolesForUser",
+            description = "Return the roles of one test user. Identify the user by user id or by username. Both values are primary keys. Pass an empty string for the key you do not have.")
     @Tool(
             name = "rolesForUser",
             description = "Return the roles of one test user. Identify the user by user id or by username. Both values are primary keys. Pass an empty string for the key you do not have.")
     public UserRoles rolesForUser(
+            @McpToolParam(description = "User id. Primary key. Use an empty string when the id is unknown.", required = false)
             @ToolParam(description = "User id. Primary key. Use an empty string when the id is unknown.", required = false)
             String userId,
+            @McpToolParam(description = "Username. Primary key. Use an empty string when the username is unknown.", required = false)
             @ToolParam(description = "Username. Primary key. Use an empty string when the username is unknown.", required = false)
             String username) {
         UserAccount account = accountFor(userId, username);
