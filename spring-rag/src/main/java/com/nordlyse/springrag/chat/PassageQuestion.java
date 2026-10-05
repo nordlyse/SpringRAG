@@ -1,8 +1,11 @@
 package com.nordlyse.springrag.chat;
 
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -17,6 +20,10 @@ final class PassageQuestion {
             "(?i).*(systemutvikler|utvikler|ingeniør|ingenior|dba)\\s*[–\\-].*");
     private static final Pattern NOT_EMPLOYMENT = Pattern.compile(
             "(?i).*(kurs|certif|sertif|feature|uteksaminert|akademi|høghskole|hoghskole).*");
+    private static final Pattern STATED_NAME = Pattern.compile(
+            "(?iu)(?:benim\\s+ad[ıi]m|ad[ıi]m|my\\s+name\\s+is|i\\s+am|ben)\\s+([\\p{L}']+)");
+
+    static final String FILE_NAME = "file_name";
 
     private PassageQuestion() {
     }
@@ -31,7 +38,17 @@ final class PassageQuestion {
                         .filter(text -> !text.isEmpty())
                         .sorted(Comparator.comparingInt(PassageQuestion::rank))
                         .collect(Collectors.joining("\n"));
+        String name = statedName(question);
         if (body.isEmpty()) {
+            if (name != null) {
+                return """
+                        No stored document is about %s.
+                        Do not list employers or places from any other person.
+
+                        Question:
+                        %s
+                        """.formatted(name, question);
+            }
             return """
                     No stored document matched this question.
                     Answer from your general knowledge.
@@ -43,18 +60,20 @@ final class PassageQuestion {
         if (asksForWorkplaces(question)) {
             String records = employmentRecords(body);
             if (!records.isBlank()) {
+                String person = name == null ? "the user" : name;
                 return """
-                        These lines are employment records from the user's documents.
-                        List every employer and place, with the dates on the neighbouring lines.
+                        These lines are employment records for %s only.
+                        List every employer and place for %s, with the dates on the neighbouring lines.
                         Answer in the same language as the question.
                         Do not answer with only a year.
+                        Do not include any other person.
 
                         Records:
                         %s
 
                         Question:
                         %s
-                        """.formatted(records, question);
+                        """.formatted(person, person, records, question);
             }
         }
         return """
@@ -69,6 +88,58 @@ final class PassageQuestion {
                 Question:
                 %s
                 """.formatted(body, question);
+    }
+
+    static String statedName(String question) {
+        if (question == null || question.isBlank()) {
+            return null;
+        }
+        Matcher matcher = STATED_NAME.matcher(question);
+        if (!matcher.find()) {
+            return null;
+        }
+        return personName(matcher.group(1));
+    }
+
+    static Set<String> filesAbout(String name, List<Document> passages) {
+        Set<String> files = new LinkedHashSet<>();
+        if (name == null || passages == null) {
+            return files;
+        }
+        for (Document passage : passages) {
+            String text = passage.getText();
+            if (text == null || !mentions(text, name)) {
+                continue;
+            }
+            Object fileName = passage.getMetadata().get(FILE_NAME);
+            if (fileName != null && !fileName.toString().isBlank()) {
+                files.add(fileName.toString());
+            }
+        }
+        return files;
+    }
+
+    private static String personName(String token) {
+        String word = token;
+        int mark = word.indexOf('\'');
+        if (mark < 0) {
+            mark = word.indexOf('’');
+        }
+        if (mark > 1) {
+            word = word.substring(0, mark);
+        }
+        word = word.replaceAll("[^\\p{L}]", "");
+        if (word.length() >= 6 && word.matches("(?iu).+(?:im|ım|um|üm)$")) {
+            word = word.substring(0, word.length() - 2);
+        }
+        if (word.length() < 2) {
+            return null;
+        }
+        return word;
+    }
+
+    private static boolean mentions(String text, String name) {
+        return Pattern.compile("(?iu)\\b" + Pattern.quote(name) + "\\b").matcher(text).find();
     }
 
     private static boolean asksForWorkplaces(String question) {
