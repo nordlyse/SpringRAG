@@ -138,6 +138,22 @@ class ChatControllerTest {
     }
 
     @Test
+    void answerLeavesStoredWorkplacesOutOfAWeatherQuestion() throws Exception {
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("Mild."))))));
+
+        dispatch("{\"message\":\"bugun trondheim da hava nasil?\"}");
+
+        verifyNoInteractions(vectorStore);
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).stream(prompt.capture());
+        String text = prompt.getValue().getUserMessage().getText();
+        assertThat(text).isEqualTo("bugun trondheim da hava nasil?");
+        assertThat(text).doesNotContain("employer");
+    }
+
+    @Test
     void answerKeepsAnotherPersonsWorkplacesOutWhenTheQuestionNamesSomeone() throws Exception {
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenAnswer(invocation -> {
             SearchRequest request = invocation.getArgument(0);

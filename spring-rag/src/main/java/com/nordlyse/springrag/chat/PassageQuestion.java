@@ -3,6 +3,7 @@ package com.nordlyse.springrag.chat;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -79,8 +80,7 @@ final class PassageQuestion {
         return """
                 The passages are the user's stored documents.
                 Answer in the same language as the question.
-                When the question asks where the user worked, list every employer and place from the passages, together with the dates when they are present.
-                Do not answer with only a year when an employer or a place is in the passages.
+                Use a passage only when it answers the question.
 
                 Passages:
                 %s
@@ -88,6 +88,18 @@ final class PassageQuestion {
                 Question:
                 %s
                 """.formatted(body, question);
+    }
+
+    static boolean asksForWeather(String question) {
+        if (question == null || question.isBlank()) {
+            return false;
+        }
+        String lower = question.toLowerCase(Locale.ROOT);
+        return lower.contains("hava")
+                || lower.contains("weather")
+                || lower.contains("forecast")
+                || lower.contains("vær")
+                || lower.contains("vaer");
     }
 
     static String statedName(String question) {
@@ -143,6 +155,9 @@ final class PassageQuestion {
     }
 
     private static boolean asksForWorkplaces(String question) {
+        if (asksForWeather(question)) {
+            return false;
+        }
         String lower = question.toLowerCase();
         return lower.contains("yer")
                 || lower.contains("calis")

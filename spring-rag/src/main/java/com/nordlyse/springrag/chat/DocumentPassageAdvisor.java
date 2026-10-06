@@ -29,6 +29,9 @@ class DocumentPassageAdvisor implements BaseAdvisor {
     public ChatClientRequest before(ChatClientRequest request, AdvisorChain chain) {
         String query = request.prompt().getUserMessage().getText();
         String searchText = query == null ? "" : query;
+        if (PassageQuestion.asksForWeather(searchText)) {
+            return request;
+        }
         List<Document> documents = passagesFor(searchText);
         if (documents.isEmpty() && PassageQuestion.statedName(searchText) == null) {
             return request;
