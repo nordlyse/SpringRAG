@@ -1,8 +1,10 @@
 package com.nordlyse.springrag.chat;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -79,8 +81,7 @@ final class PassageQuestion {
         return """
                 The passages are the user's stored documents.
                 Answer in the same language as the question.
-                When the question asks where the user worked, list every employer and place from the passages, together with the dates when they are present.
-                Do not answer with only a year when an employer or a place is in the passages.
+                Use a passage only when it answers the question.
 
                 Passages:
                 %s
@@ -88,6 +89,60 @@ final class PassageQuestion {
                 Question:
                 %s
                 """.formatted(body, question);
+    }
+
+    static String city(String question) {
+        if (question == null || question.isBlank()) {
+            return "";
+        }
+        String normalized = question.toLowerCase(Locale.ROOT)
+                .replace('\'', ' ')
+                .replace('’', ' ')
+                .replaceAll("[^\\p{L}\\s]", " ");
+        Set<String> skip = Set.of(
+                "bugun", "bugün", "today", "hava", "weather", "forecast", "nasil", "nasıl",
+                "how", "what", "is", "the", "in", "a", "da", "de", "ta", "te", "icin", "için");
+        List<String> kept = new ArrayList<>();
+        for (String word : normalized.split("\\s+")) {
+            if (word.isBlank() || skip.contains(word)) {
+                continue;
+            }
+            if (word.length() > 4 && (word.endsWith("da") || word.endsWith("de") || word.endsWith("ta") || word.endsWith("te"))) {
+                word = word.substring(0, word.length() - 2);
+            }
+            if (word.length() >= 2 && !skip.contains(word)) {
+                kept.add(word);
+            }
+        }
+        return String.join(" ", kept);
+    }
+
+    static String weatherPrompt(String question, String report) {
+        return """
+                This is the Open-Meteo weather report for the question.
+                Answer in the same language as the question, in two short sentences.
+                Use only this report.
+                Do not mention tools.
+                Do not invent a temperature.
+
+                Report:
+                %s
+
+                Question:
+                %s
+                """.formatted(report, question);
+    }
+
+    static boolean asksForWeather(String question) {
+        if (question == null || question.isBlank()) {
+            return false;
+        }
+        String lower = question.toLowerCase(Locale.ROOT);
+        return lower.contains("hava")
+                || lower.contains("weather")
+                || lower.contains("forecast")
+                || lower.contains("vær")
+                || lower.contains("vaer");
     }
 
     static String statedName(String question) {
@@ -143,6 +198,9 @@ final class PassageQuestion {
     }
 
     private static boolean asksForWorkplaces(String question) {
+        if (asksForWeather(question)) {
+            return false;
+        }
         String lower = question.toLowerCase();
         return lower.contains("yer")
                 || lower.contains("calis")

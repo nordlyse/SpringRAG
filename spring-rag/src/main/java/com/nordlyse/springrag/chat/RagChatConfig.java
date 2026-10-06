@@ -3,6 +3,7 @@ package com.nordlyse.springrag.chat;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,10 @@ public class RagChatConfig {
             When they ask which roles a user has, call rolesForUser.
             Answer from the tool result in their language.
             Do not invent a user or a role.
+            When a weather report is included with the question, answer from that report in their language, in two short sentences.
+            Do not mention tools.
+            Do not invent a forecast, a temperature, or a coordinate.
+            Say that the forecast comes from Open-Meteo.
             """;
 
     @Bean
@@ -32,7 +37,8 @@ public class RagChatConfig {
     @Bean
     DocumentPassageAdvisor documentPassageAdvisor(
             VectorStore vectorStore,
-            @Value("${spring-rag.similarity-threshold:0.32}") double similarityThreshold) {
-        return new DocumentPassageAdvisor(vectorStore, similarityThreshold);
+            @Value("${spring-rag.similarity-threshold:0.32}") double similarityThreshold,
+            ObjectProvider<CityForecast> cityForecast) {
+        return new DocumentPassageAdvisor(vectorStore, similarityThreshold, cityForecast);
     }
 }

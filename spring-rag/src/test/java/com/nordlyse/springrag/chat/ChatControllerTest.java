@@ -84,7 +84,9 @@ class ChatControllerTest {
         assertThat(prompt.getValue().getUserMessage().getText()).contains("The stored note mentions a river.");
         assertThat(((ToolCallingChatOptions) prompt.getValue().getOptions()).getToolCallbacks())
                 .extracting(callback -> callback.getToolDefinition().name())
-                .contains("findUser", "rolesForUser");
+                .contains("findUser", "rolesForUser")
+                .doesNotContain("geocoding", "weather_forecast");
+        assertThat(texts(prompt.getValue())).anyMatch(text -> text.contains("Do not invent a forecast"));
     }
 
     @Test
@@ -105,6 +107,22 @@ class ChatControllerTest {
         assertThat(text).contains("Trondheim");
         assertThat(text).contains("employer and place");
         assertThat(text).doesNotContain("Certificate 2025");
+    }
+
+    @Test
+    void answerLeavesStoredWorkplacesOutOfAWeatherQuestion() throws Exception {
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("Mild."))))));
+
+        dispatch("{\"message\":\"bugun trondheim da hava nasil?\"}");
+
+        verifyNoInteractions(vectorStore);
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).stream(prompt.capture());
+        String text = prompt.getValue().getUserMessage().getText();
+        assertThat(text).isEqualTo("bugun trondheim da hava nasil?");
+        assertThat(text).doesNotContain("employer");
     }
 
     @Test

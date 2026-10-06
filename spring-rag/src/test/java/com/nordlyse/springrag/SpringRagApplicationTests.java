@@ -9,7 +9,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "spring.autoconfigure.exclude=org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration",
         "spring-rag.directory-listener=false",
         "spring-rag.keep-models-loaded=false",
-        "spring-rag.seed-test-users=false"
+        "spring-rag.seed-test-users=false",
+        "spring.ai.mcp.client.enabled=false"
 })
 class SpringRagApplicationTests {
 

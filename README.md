@@ -11,7 +11,7 @@ SpringRAG is a retrieval-augmented question system built with Ollama, pgvector, 
 
 ## Run
 
-Ollama, pgvector, `spring-rag`, and the web app are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
+Ollama, pgvector, the Open-Meteo weather server, `spring-rag`, and the web app are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
 
 Start the stack:
 
@@ -19,7 +19,7 @@ Start the stack:
 docker compose up --build
 ```
 
-The API listens on port `8080`. Inside Compose it talks to Ollama at `http://ollama:11434` and to pgvector at `jdbc:postgresql://pgvector:5432/springrag`. Uploaded files are written to `spring-rag/data`. Pull the chat and embedding models once Ollama is up:
+The API listens on port `8080`. Inside Compose it talks to Ollama at `http://ollama:11434`, to pgvector at `jdbc:postgresql://pgvector:5432/springrag`, and to the weather server at `http://open-meteo:3000`. Uploaded files are written to `spring-rag/data`. Pull the chat and embedding models once Ollama is up:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
@@ -105,6 +105,8 @@ curl -N http://localhost:8080/chat \
 
 `/chat` can call two tools on `UserDirectory` when a question is about a user or a role. Each method is marked with `@Tool` for the chat client and with `@McpTool` for the MCP server. The server name is `spring-rag-users`. It speaks streamable HTTP at `/mcp` and is the allowed MCP server for these lookups. The answer must come from the tool result. The model is told not to invent a user or a role.
 
+A question about the weather in a city uses a second allowed MCP server, [open-meteo-mcp](https://github.com/cmer81/open-meteo-mcp) `2.5.2`. That server is MIT. Inside its image, `dotenv` is BSD-2-Clause and `lru-cache` is BlueOak-1.0.0. The forecast itself comes from the public Open-Meteo API. That data is CC BY 4.0, so an answer names Open-Meteo. The AGPL source of the Open-Meteo API is not part of this repository. Compose starts the server as `open-meteo`. For a weather question the application asks that server for the city and today's forecast, then the model answers from that short report. The model is told not to invent a forecast.
+
 | Tool | What it does |
 | --- | --- |
 | `findUser` | Finds one test user by user id or by username. Either value is enough. Pass an empty string for the key you do not have. When both are present they must belong to the same user. |
@@ -135,9 +137,9 @@ curl -N http://localhost:8080/chat \
 The intended answer path uses two sources when the question needs them:
 
 1. Passages retrieved from the stored documents.
-2. Results returned by MCP servers that have been explicitly allowed. Any other MCP server stays unused.
+2. Results from the allowed MCP servers: `spring-rag-users` for a user or a role, and `open-meteo` for the weather in a city. Any other MCP server stays unused.
 
-Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. MCP calls are not wired into `/chat` yet. A question searches pgvector first. When a passage matches, the answer uses that passage. When nothing matches, the model answers from its own knowledge.
+Document content stays in that path even when an allowed MCP server is called, so a reply is grounded in the user's files and in those permitted tools. A weather question asks Open-Meteo and answers from that report. A question about stored documents searches pgvector first. When a passage matches, the answer uses that passage. When nothing matches, the model answers from its own knowledge.
 
 ## Tests
 
