@@ -29,6 +29,13 @@ services:
       retries: 12
       start_period: 10s
 
+  # MIT image. Transitive dotenv is BSD-2-Clause and lru-cache is BlueOak-1.0.0.
+  # Forecast data is Open-Meteo, CC BY 4.0. The AGPL API source is not vendored.
+  open-meteo:
+    image: ghcr.io/cmer81/open-meteo-mcp:2.5.2
+    ports:
+      - "3000:3000"
+
   spring-rag:
     build: ./spring-rag
     ports:
@@ -40,12 +47,15 @@ services:
       SPRING_RAG_DATABASE_URL: jdbc:postgresql://pgvector:5432/springrag
       SPRING_RAG_DATABASE_USERNAME: springrag
       SPRING_RAG_DATABASE_PASSWORD: springrag
+      SPRING_RAG_WEATHER_URL: http://open-meteo:3000
     volumes:
       - ./spring-rag/data:/app/data
     depends_on:
       ollama:
         condition: service_healthy
       pgvector:
+        condition: service_healthy
+      open-meteo:
         condition: service_healthy
 
   rag-web:

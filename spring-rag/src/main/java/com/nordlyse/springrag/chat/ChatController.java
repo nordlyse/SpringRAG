@@ -11,6 +11,8 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.StreamingChatModel;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,13 +34,15 @@ public class ChatController {
             StreamingChatModel streamingChatModel,
             ChatMemory chatMemory,
             DocumentPassageAdvisor documentPassageAdvisor,
-            UserDirectory userDirectory) {
+            UserDirectory userDirectory,
+            ObjectProvider<ToolCallbackProvider> weatherTools) {
         this.chatMemory = chatMemory;
-        this.chatClient = ChatClient.builder(chatModel(streamingChatModel))
+        ChatClient.Builder chat = ChatClient.builder(chatModel(streamingChatModel))
                 .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
                 .defaultAdvisors(documentPassageAdvisor)
-                .defaultTools(userDirectory)
-                .build();
+                .defaultTools(userDirectory);
+        weatherTools.ifAvailable(tools -> chat.defaultTools(tools));
+        this.chatClient = chat.build();
     }
 
     @PostMapping(path = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

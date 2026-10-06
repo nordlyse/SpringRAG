@@ -66,6 +66,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
         </dependency>
+        <!-- Apache-2.0. Calls the allowed Open-Meteo MCP server. Transitive MCP Java SDK is MIT. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-client</artifactId>
+        </dependency>
         <!-- Apache-2.0. Reads text from PDF files. -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

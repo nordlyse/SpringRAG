@@ -30,6 +30,15 @@ spring:
           resource: false
           prompt: false
           completion: false
+      client:
+        name: spring-rag
+        version: 0.1.0
+        request-timeout: 30s
+        streamable-http:
+          connections:
+            open-meteo:
+              url: ${SPRING_RAG_WEATHER_URL:http://localhost:3000}
+              endpoint: /mcp
     vectorstore:
       pgvector:
         initialize-schema: true

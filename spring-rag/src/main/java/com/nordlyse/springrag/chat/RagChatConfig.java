@@ -22,6 +22,10 @@ public class RagChatConfig {
             When they ask which roles a user has, call rolesForUser.
             Answer from the tool result in their language.
             Do not invent a user or a role.
+            When they ask about the weather in a city, call geocoding with that city name, then call weather_forecast with the latitude and longitude from geocoding.
+            Answer from those tool results in their language.
+            Do not invent a forecast, a temperature, or a coordinate.
+            Say that the forecast comes from Open-Meteo.
             """;
 
     @Bean
