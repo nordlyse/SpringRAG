@@ -2,7 +2,6 @@ package com.nordlyse.springrag.chat;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -13,9 +12,6 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.support.ToolCallbacks;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -60,14 +56,6 @@ class ChatControllerTest {
     @SuppressWarnings("unused")
     private UserStore userStore;
 
-    @MockitoBean
-    private ToolCallbackProvider weatherTools;
-
-    @BeforeEach
-    void noWeatherTools() {
-        when(weatherTools.getToolCallbacks()).thenReturn(new org.springframework.ai.tool.ToolCallback[0]);
-    }
-
     @Test
     void answerStreamsTheModelReplyWithRetrievedContext() throws Exception {
         when(vectorStore.similaritySearch(any(SearchRequest.class)))
@@ -96,25 +84,9 @@ class ChatControllerTest {
         assertThat(prompt.getValue().getUserMessage().getText()).contains("The stored note mentions a river.");
         assertThat(((ToolCallingChatOptions) prompt.getValue().getOptions()).getToolCallbacks())
                 .extracting(callback -> callback.getToolDefinition().name())
-                .contains("findUser", "rolesForUser");
+                .contains("findUser", "rolesForUser")
+                .doesNotContain("geocoding", "weather_forecast");
         assertThat(texts(prompt.getValue())).anyMatch(text -> text.contains("Do not invent a forecast"));
-    }
-
-    @Test
-    void answerCanCallTheCityWeatherTools() throws Exception {
-        when(weatherTools.getToolCallbacks()).thenReturn(ToolCallbacks.from(new CityWeather()));
-        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
-        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
-        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
-                new ChatResponse(List.of(new Generation(new AssistantMessage("Mild."))))));
-
-        dispatch("{\"message\":\"What is the weather in Ankara?\"}");
-
-        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModel).stream(prompt.capture());
-        assertThat(((ToolCallingChatOptions) prompt.getValue().getOptions()).getToolCallbacks())
-                .extracting(callback -> callback.getToolDefinition().name())
-                .contains("geocoding", "weather_forecast", "findUser", "rolesForUser");
     }
 
     @Test
@@ -283,18 +255,5 @@ class ChatControllerTest {
 
     private static java.util.List<String> texts(Prompt prompt) {
         return prompt.getInstructions().stream().map(Message::getText).toList();
-    }
-
-    static final class CityWeather {
-
-        @Tool(name = "geocoding", description = "Find a city by name.")
-        public String geocoding(String name) {
-            return name;
-        }
-
-        @Tool(name = "weather_forecast", description = "Forecast for one pair of coordinates.")
-        public String weatherForecast(double latitude, double longitude) {
-            return latitude + "," + longitude;
-        }
     }
 }

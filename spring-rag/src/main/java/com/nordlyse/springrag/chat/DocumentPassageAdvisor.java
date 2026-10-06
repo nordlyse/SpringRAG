@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
@@ -19,10 +20,15 @@ class DocumentPassageAdvisor implements BaseAdvisor {
 
     private final VectorStore vectorStore;
     private final double similarityThreshold;
+    private final ObjectProvider<CityForecast> cityForecast;
 
-    DocumentPassageAdvisor(VectorStore vectorStore, double similarityThreshold) {
+    DocumentPassageAdvisor(
+            VectorStore vectorStore,
+            double similarityThreshold,
+            ObjectProvider<CityForecast> cityForecast) {
         this.vectorStore = vectorStore;
         this.similarityThreshold = similarityThreshold;
+        this.cityForecast = cityForecast;
     }
 
     @Override
@@ -30,7 +36,14 @@ class DocumentPassageAdvisor implements BaseAdvisor {
         String query = request.prompt().getUserMessage().getText();
         String searchText = query == null ? "" : query;
         if (PassageQuestion.asksForWeather(searchText)) {
-            return request;
+            CityForecast forecast = cityForecast.getIfAvailable();
+            String report = forecast == null ? "" : forecast.report(searchText);
+            if (report.isBlank()) {
+                return request;
+            }
+            return request.mutate()
+                    .prompt(request.prompt().augmentUserMessage(PassageQuestion.weatherPrompt(searchText, report)))
+                    .build();
         }
         List<Document> documents = passagesFor(searchText);
         if (documents.isEmpty() && PassageQuestion.statedName(searchText) == null) {
