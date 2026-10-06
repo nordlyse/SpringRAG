@@ -123,6 +123,27 @@ class ChatControllerTest {
         String text = prompt.getValue().getUserMessage().getText();
         assertThat(text).isEqualTo("bugun trondheim da hava nasil?");
         assertThat(text).doesNotContain("employer");
+        assertThat(texts(prompt.getValue())).noneMatch(line -> line.contains("rolesForUser"));
+        if (prompt.getValue().getOptions() instanceof ToolCallingChatOptions tools && tools.getToolCallbacks() != null) {
+            assertThat(tools.getToolCallbacks())
+                    .extracting(callback -> callback.getToolDefinition().name())
+                    .doesNotContain("findUser", "rolesForUser");
+        }
+    }
+
+    @Test
+    void weatherAnswerLeavesEarlierDatesOut() throws Exception {
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
+        when(chatModel.getOptions()).thenReturn(OllamaChatOptions.builder().build());
+        when(chatModel.stream(any(Prompt.class))).thenReturn(Flux.just(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("Noted."))))));
+
+        dispatch("{\"message\":\"The meeting is on 27 January\",\"conversationId\":\"wx\"}");
+        dispatch("{\"message\":\"Ankara da 3 gun onceki hava durumu nedir?\",\"conversationId\":\"wx\"}");
+
+        ArgumentCaptor<Prompt> prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel, times(2)).stream(prompt.capture());
+        assertThat(texts(prompt.getAllValues().get(1))).noneMatch(text -> text.contains("January"));
     }
 
     @Test

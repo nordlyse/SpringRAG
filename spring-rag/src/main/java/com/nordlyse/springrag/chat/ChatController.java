@@ -11,6 +11,7 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.StreamingChatModel;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,18 +27,27 @@ import reactor.core.publisher.Flux;
 public class ChatController {
 
     private final ChatClient chatClient;
+    private final ChatClient weatherClient;
     private final ChatMemory chatMemory;
+    private final ObjectProvider<CityForecast> cityForecast;
 
     public ChatController(
             StreamingChatModel streamingChatModel,
             ChatMemory chatMemory,
             DocumentPassageAdvisor documentPassageAdvisor,
-            UserDirectory userDirectory) {
+            UserDirectory userDirectory,
+            ObjectProvider<CityForecast> cityForecast) {
         this.chatMemory = chatMemory;
-        this.chatClient = ChatClient.builder(chatModel(streamingChatModel))
+        this.cityForecast = cityForecast;
+        ChatModel model = chatModel(streamingChatModel);
+        this.chatClient = ChatClient.builder(model)
                 .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
                 .defaultAdvisors(documentPassageAdvisor)
                 .defaultTools(userDirectory)
+                .build();
+        this.weatherClient = ChatClient.builder(model)
+                .defaultSystem(RagChatConfig.WEATHER_SYSTEM)
+                .defaultAdvisors(documentPassageAdvisor)
                 .build();
     }
 
@@ -48,9 +58,22 @@ public class ChatController {
         }
         String conversationId = conversationId(request.conversationId());
         chatMemory.add(conversationId, new UserMessage(request.message()));
-        List<Message> earlier = earlierMessages(chatMemory.get(conversationId));
+        boolean weather = PassageQuestion.asksForWeather(request.message());
+        if (weather) {
+            CityForecast forecast = cityForecast.getIfAvailable();
+            if (forecast != null) {
+                String spoken = forecast.report(request.message());
+                if (spoken.isBlank()) {
+                    spoken = CityForecast.missed(CityForecast.inTurkish(request.message()));
+                }
+                chatMemory.add(conversationId, new AssistantMessage(spoken));
+                return Flux.just(spoken);
+            }
+        }
+        List<Message> earlier = weather ? List.of() : earlierMessages(chatMemory.get(conversationId));
         StringBuilder reply = new StringBuilder();
-        return chatClient.prompt()
+        ChatClient client = weather ? weatherClient : chatClient;
+        return client.prompt()
                 .messages(earlier)
                 .user(request.message())
                 .stream()
