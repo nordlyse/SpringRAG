@@ -23,6 +23,7 @@ public class RagChatConfig {
             Answer from the tool result in their language.
             Do not invent a user or a role.
             When they ask about the weather in a city, call geocoding with that city name, then call weather_forecast with the latitude and longitude from geocoding.
+            Pass geocoding count as a number. Pass countryCode only as two capital letters, such as TR for Turkey.
             Answer from those tool results in their language.
             Do not invent a forecast, a temperature, or a coordinate.
             Say that the forecast comes from Open-Meteo.

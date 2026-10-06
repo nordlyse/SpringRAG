@@ -41,7 +41,7 @@ public class ChatController {
                 .defaultSystem(RagChatConfig.CONVERSATION_SYSTEM)
                 .defaultAdvisors(documentPassageAdvisor)
                 .defaultTools(userDirectory);
-        weatherTools.ifAvailable(tools -> chat.defaultTools(tools));
+        weatherTools.ifAvailable(tools -> chat.defaultTools(WeatherTools.repaired(tools)));
         this.chatClient = chat.build();
     }
 
