@@ -95,13 +95,11 @@ final class PassageQuestion {
         if (question == null || question.isBlank()) {
             return "";
         }
-        String normalized = question.toLowerCase(Locale.ROOT)
-                .replace('\'', ' ')
-                .replace('’', ' ')
-                .replaceAll("[^\\p{L}\\s]", " ");
+        String normalized = WeatherWhen.withoutDates(question).replaceAll("[^\\p{L}\\s]", " ");
         Set<String> skip = Set.of(
-                "bugun", "bugün", "today", "hava", "weather", "forecast", "nasil", "nasıl",
-                "how", "what", "is", "the", "in", "a", "da", "de", "ta", "te", "icin", "için");
+                "bugun", "today", "hava", "weather", "forecast", "nasil", "nasildi",
+                "how", "what", "is", "the", "in", "a", "da", "de", "ta", "te", "icin", "di",
+                "durum", "durumu", "nedir", "ne", "hakkinda", "bilgi", "bilgisi");
         List<String> kept = new ArrayList<>();
         for (String word : normalized.split("\\s+")) {
             if (word.isBlank() || skip.contains(word)) {
@@ -122,6 +120,10 @@ final class PassageQuestion {
                 This is the Open-Meteo weather report for the question.
                 Answer in the same language as the question, in two short sentences.
                 Use only this report.
+                Name the asked date from the report.
+                Do not use any other date.
+                If the report says the day is before today, do not say it is after today.
+                Do not call another day today.
                 Do not mention tools.
                 Do not invent a temperature.
 

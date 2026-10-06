@@ -37,9 +37,16 @@ class DocumentPassageAdvisor implements BaseAdvisor {
         String searchText = query == null ? "" : query;
         if (PassageQuestion.asksForWeather(searchText)) {
             CityForecast forecast = cityForecast.getIfAvailable();
-            String report = forecast == null ? "" : forecast.report(searchText);
-            if (report.isBlank()) {
+            if (forecast == null) {
                 return request;
+            }
+            String report = forecast.report(searchText);
+            if (report.isBlank()) {
+                report = """
+                        No Open-Meteo weather was found for this question.
+                        Do not mention tools.
+                        Do not invent a temperature.
+                        """;
             }
             return request.mutate()
                     .prompt(request.prompt().augmentUserMessage(PassageQuestion.weatherPrompt(searchText, report)))

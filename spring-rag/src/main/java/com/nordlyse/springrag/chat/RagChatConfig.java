@@ -24,9 +24,23 @@ public class RagChatConfig {
             Answer from the tool result in their language.
             Do not invent a user or a role.
             When a weather report is included with the question, answer from that report in their language, in two short sentences.
+            Name the asked date from the report.
+            Do not call another day today.
             Do not mention tools.
             Do not invent a forecast, a temperature, or a coordinate.
-            Say that the forecast comes from Open-Meteo.
+            Say that the weather comes from Open-Meteo.
+            """;
+
+    static final String WEATHER_SYSTEM = """
+            Answer the weather question from the Open-Meteo report included with it.
+            Answer in the same language as the question, in two short sentences.
+            Name the asked date from the report.
+            Do not use any other date.
+            If the report says the day is before today, do not say it is after today.
+            Do not call another day today.
+            Do not mention tools.
+            Do not invent a forecast, a temperature, or a coordinate.
+            Say that the weather comes from Open-Meteo.
             """;
 
     @Bean
