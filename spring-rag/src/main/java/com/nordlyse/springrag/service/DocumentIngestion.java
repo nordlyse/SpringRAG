@@ -8,8 +8,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -23,17 +21,18 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class DocumentIngestion {
 
     static final String FILE_NAME = "file_name";
 
-    private static final Logger log = LoggerFactory.getLogger(DocumentIngestion.class);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "pdf", "png", "jpeg", "jpg", "txt", "doc", "docx", "xls", "xlsx", "pptx", "ppt", "csv");
 

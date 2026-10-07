@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @ConditionalOnProperty(name = "spring-rag.directory-listener", havingValue = "true", matchIfMissing = true)
@@ -30,9 +29,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class DataDirectoryListener implements SmartLifecycle {
-
-    private static final Logger log = LoggerFactory.getLogger(DataDirectoryListener.class);
 
     private Path dataDirectory;
     private DocumentIngestion ingestion;
