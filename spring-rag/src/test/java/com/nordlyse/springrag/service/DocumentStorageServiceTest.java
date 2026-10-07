@@ -25,9 +25,9 @@ class DocumentStorageServiceTest {
 
         StoredDocument stored = service.add(file);
 
-        assertThat(stored.fileName()).endsWith(".txt");
-        assertThat(stored.size()).isEqualTo(5);
-        assertThat(Files.readString(dataDirectory.resolve(stored.fileName()))).isEqualTo("hello");
+        assertThat(stored.getFileName()).endsWith(".txt");
+        assertThat(stored.getSize()).isEqualTo(5);
+        assertThat(Files.readString(dataDirectory.resolve(stored.getFileName()))).isEqualTo("hello");
     }
 
     @Test
@@ -52,8 +52,8 @@ class DocumentStorageServiceTest {
 
         StoredDocument stored = service.add(file);
 
-        assertThat(stored.fileName()).endsWith("." + extension);
-        assertThat(Files.readString(dataDirectory.resolve(stored.fileName()))).isEqualTo("body");
+        assertThat(stored.getFileName()).endsWith("." + extension);
+        assertThat(Files.readString(dataDirectory.resolve(stored.getFileName()))).isEqualTo("body");
     }
 
     @Test
@@ -63,9 +63,9 @@ class DocumentStorageServiceTest {
                 "file", "../secret.txt", "text/plain", "hidden".getBytes());
 
         StoredDocument stored = service.add(file);
-        Path storedPath = dataDirectory.resolve(stored.fileName());
+        Path storedPath = dataDirectory.resolve(stored.getFileName());
 
-        assertThat(stored.fileName()).startsWith("secret-");
+        assertThat(stored.getFileName()).startsWith("secret-");
         assertThat(storedPath.getParent()).isEqualTo(dataDirectory);
         assertThat(Files.readString(storedPath)).isEqualTo("hidden");
     }
@@ -78,7 +78,7 @@ class DocumentStorageServiceTest {
 
         StoredDocument stored = service.add(file);
 
-        assertThat(stored.fileName()).startsWith("NOTES-").endsWith(".pdf");
+        assertThat(stored.getFileName()).startsWith("NOTES-").endsWith(".pdf");
     }
 
     @Test
@@ -87,7 +87,7 @@ class DocumentStorageServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "@@@.txt", "text/plain", "x".getBytes());
 
-        assertThat(service.add(file).fileName()).startsWith("___-");
+        assertThat(service.add(file).getFileName()).startsWith("___-");
     }
 
     @Test
@@ -96,7 +96,7 @@ class DocumentStorageServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", ".txt", "text/plain", "x".getBytes());
 
-        assertThat(service.add(file).fileName()).startsWith("document-");
+        assertThat(service.add(file).getFileName()).startsWith("document-");
     }
 
     @Test
@@ -104,7 +104,7 @@ class DocumentStorageServiceTest {
         DocumentStorageService service = new DocumentStorageService(dataDirectory);
         MockMultipartFile file = new MockMultipartFile("file", "notes.txt", null, "x".getBytes());
 
-        assertThat(service.add(file).mediaType()).isEqualTo("application/octet-stream");
+        assertThat(service.add(file).getMediaType()).isEqualTo("application/octet-stream");
     }
 
     @Test

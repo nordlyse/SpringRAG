@@ -6,7 +6,7 @@ SpringRAG answers user questions from stored documents and from MCP servers that
 
 - **Ollama 0.34.4** runs the local language model and embeddings.
 - **pgvector 0.8.6** on PostgreSQL 17 stores document embeddings.
-- **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** ties the model, the vector store, and the question flow together. That application lives in `spring-rag/`.
+- **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** ties the model, the vector store, and the question flow together. **Lombok** supplies the accessors and constructors and is MIT. That application lives in `spring-rag/`.
 
 ## Run
 

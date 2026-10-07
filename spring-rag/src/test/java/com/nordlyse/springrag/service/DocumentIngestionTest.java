@@ -37,8 +37,8 @@ class DocumentIngestionTest {
         assertThat(passages.getValue().get(0).getText()).contains("Nordlyse in Oslo");
         assertThat(passages.getValue().get(0).getMetadata()).containsEntry(DocumentIngestion.FILE_NAME, "notes.txt");
         assertThat(board.notices()).anySatisfy(notice -> {
-            assertThat(notice.state()).isEqualTo("ready");
-            assertThat(notice.message()).isEqualTo("notes.txt was scanned and is ready to use.");
+            assertThat(notice.getState()).isEqualTo("ready");
+            assertThat(notice.getMessage()).isEqualTo("notes.txt was scanned and is ready to use.");
         });
     }
 
@@ -65,8 +65,8 @@ class DocumentIngestionTest {
 
         verify(vectorStore, times(0)).add(anyList());
         assertThat(board.notices()).anySatisfy(notice -> {
-            assertThat(notice.state()).isEqualTo("failed");
-            assertThat(notice.message()).isEqualTo("empty.txt has no readable text.");
+            assertThat(notice.getState()).isEqualTo("failed");
+            assertThat(notice.getMessage()).isEqualTo("empty.txt has no readable text.");
         });
     }
 }

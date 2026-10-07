@@ -14,10 +14,21 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Service
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DocumentIngestion {
 
     static final String FILE_NAME = "file_name";
@@ -26,19 +37,20 @@ public class DocumentIngestion {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "pdf", "png", "jpeg", "jpg", "txt", "doc", "docx", "xls", "xlsx", "pptx", "ppt", "csv");
 
-    private final Path dataDirectory;
-    private final VectorStore vectorStore;
-    private final IngestionBoard board;
-    private final TokenTextSplitter splitter = TokenTextSplitter.builder()
+    private Path dataDirectory;
+    private VectorStore vectorStore;
+    private IngestionBoard board;
+    private TokenTextSplitter splitter = TokenTextSplitter.builder()
             .withChunkSize(160)
             .withMinChunkSizeChars(80)
             .withMinChunkLengthToEmbed(5)
             .withMaxNumChunks(200)
             .withKeepSeparator(true)
             .build();
-    private final ConcurrentHashMap<String, Fingerprint> indexed = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Fingerprint> indexed = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
 
+    @Autowired
     DocumentIngestion(
             @Value("${spring-rag.data-directory}") Path dataDirectory,
             VectorStore vectorStore,
@@ -135,6 +147,14 @@ public class DocumentIngestion {
         return ALLOWED_EXTENSIONS.contains(name.substring(dot + 1).toLowerCase(Locale.ROOT));
     }
 
-    private record Fingerprint(long size, long modified) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode
+    private static class Fingerprint {
+
+        private long size;
+        private long modified;
     }
 }

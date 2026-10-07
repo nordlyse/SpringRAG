@@ -2,6 +2,21 @@ package com.nordlyse.springrag.database;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @ConfigurationProperties(prefix = "spring-rag.database")
-public record VectorDatabaseSettings(String url, String username, String password, String schema, String table) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class VectorDatabaseSettings {
+
+    private String url;
+    private String username;
+    private String password;
+    private String schema;
+    private String table;
 }

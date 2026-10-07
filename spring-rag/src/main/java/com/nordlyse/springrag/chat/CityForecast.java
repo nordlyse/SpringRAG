@@ -8,7 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -16,6 +22,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 @Component
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 class CityForecast {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -25,11 +35,7 @@ class CityForecast {
             "precipitation_sum",
             "weather_code");
 
-    private final ObjectProvider<List<McpSyncClient>> clients;
-
-    CityForecast(ObjectProvider<List<McpSyncClient>> clients) {
-        this.clients = clients;
-    }
+    private ObjectProvider<List<McpSyncClient>> clients;
 
     String report(String question) {
         List<McpSyncClient> found = clients.getIfAvailable();
@@ -53,17 +59,17 @@ class CityForecast {
             LocalDate today = LocalDate.now(zone);
             WeatherWhen.Asked asked = WeatherWhen.resolve(question, today);
             boolean turkish = inTurkish(question);
-            if (asked.kind() == WeatherWhen.Kind.UNREADABLE || asked.kind() == WeatherWhen.Kind.OUTSIDE) {
+            if (asked.getKind() == WeatherWhen.Kind.UNREADABLE || asked.getKind() == WeatherWhen.Kind.OUTSIDE) {
                 return spokenUnavailable(placeName(match), asked, today, turkish);
             }
-            boolean now = asked.kind() == WeatherWhen.Kind.FORECAST && asked.date().equals(today);
+            boolean now = asked.getKind() == WeatherWhen.Kind.FORECAST && asked.getDate().equals(today);
             String body = text(client.callTool(new McpSchema.CallToolRequest(
-                    toolFor(asked.kind()),
-                    arguments(match.path("latitude").asDouble(), match.path("longitude").asDouble(), asked.date(), now))));
+                    toolFor(asked.getKind()),
+                    arguments(match.path("latitude").asDouble(), match.path("longitude").asDouble(), asked.getDate(), now))));
             if (body.isBlank()) {
                 return "";
             }
-            return spoken(match, body, asked.date(), now, turkish);
+            return spoken(match, body, asked.getDate(), now, turkish);
         }
         catch (RuntimeException ignored) {
             return "";
@@ -200,20 +206,20 @@ class CityForecast {
     }
 
     static String spokenUnavailable(String where, WeatherWhen.Asked asked, LocalDate today, boolean turkish) {
-        if (asked.kind() == WeatherWhen.Kind.UNREADABLE) {
+        if (asked.getKind() == WeatherWhen.Kind.UNREADABLE) {
             return turkish
                     ? where + " için sorudaki tarih okunamadı."
                     : "The date in the question for " + where + " could not be read.";
         }
-        if (asked.date().isBefore(WeatherWhen.ARCHIVE_START)) {
+        if (asked.getDate().isBefore(WeatherWhen.ARCHIVE_START)) {
             return turkish
-                    ? "Open-Meteo arşivi 1 Ocak 1940 tarihinde başlar. " + turkishDate(asked.date()) + " için veri yok."
-                    : "The Open-Meteo archive starts on 1 January 1940. No weather for " + englishDate(asked.date()) + ".";
+                    ? "Open-Meteo arşivi 1 Ocak 1940 tarihinde başlar. " + turkishDate(asked.getDate()) + " için veri yok."
+                    : "The Open-Meteo archive starts on 1 January 1940. No weather for " + englishDate(asked.getDate()) + ".";
         }
         LocalDate last = today.plusDays(WeatherWhen.FORECAST_FUTURE_DAYS);
         return turkish
-                ? turkishDate(asked.date()) + " için günlük tahmin yok. Günlük tahmin " + turkishDate(last) + " tarihine kadar."
-                : "No daily forecast for " + englishDate(asked.date()) + ". Daily forecast runs through " + englishDate(last) + ".";
+                ? turkishDate(asked.getDate()) + " için günlük tahmin yok. Günlük tahmin " + turkishDate(last) + " tarihine kadar."
+                : "No daily forecast for " + englishDate(asked.getDate()) + ". Daily forecast runs through " + englishDate(last) + ".";
     }
 
     static String missed(boolean turkish) {
@@ -223,7 +229,7 @@ class CityForecast {
     }
 
     static String unavailable(String where, WeatherWhen.Asked asked, LocalDate today) {
-        if (asked.kind() == WeatherWhen.Kind.UNREADABLE) {
+        if (asked.getKind() == WeatherWhen.Kind.UNREADABLE) {
             return """
                     Open-Meteo weather for %s.
                     The date in the question could not be read.
@@ -231,13 +237,13 @@ class CityForecast {
                     Do not invent a temperature.
                     """.formatted(where);
         }
-        if (asked.date().isBefore(WeatherWhen.ARCHIVE_START)) {
+        if (asked.getDate().isBefore(WeatherWhen.ARCHIVE_START)) {
             return """
                     Open-Meteo weather for %s.
                     Asked date: %s.
                     The Open-Meteo archive starts on 1940-01-01.
                     Do not invent a temperature.
-                    """.formatted(where, asked.date());
+                    """.formatted(where, asked.getDate());
         }
         return """
                 Open-Meteo weather for %s.
@@ -245,7 +251,7 @@ class CityForecast {
                 No daily forecast is available that far ahead.
                 Daily forecast runs through %s.
                 Do not invent a temperature.
-                """.formatted(where, askedLine(asked.date(), asked.label()), today.plusDays(WeatherWhen.FORECAST_FUTURE_DAYS));
+                """.formatted(where, askedLine(asked.getDate(), asked.getLabel()), today.plusDays(WeatherWhen.FORECAST_FUTURE_DAYS));
     }
 
     static boolean inTurkish(String question) {

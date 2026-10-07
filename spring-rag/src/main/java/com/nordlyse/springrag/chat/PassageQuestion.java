@@ -13,6 +13,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.ai.document.Document;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
 final class PassageQuestion {
 
     private static final Pattern YEAR = Pattern.compile("\\b20\\d{2}\\b");
@@ -26,9 +33,6 @@ final class PassageQuestion {
             "(?iu)(?:benim\\s+ad[ıi]m|ad[ıi]m|my\\s+name\\s+is|i\\s+am|ben)\\s+([\\p{L}']+)");
 
     static final String FILE_NAME = "file_name";
-
-    private PassageQuestion() {
-    }
 
     static String prompt(String question, List<Document> passages) {
         String body = passages == null

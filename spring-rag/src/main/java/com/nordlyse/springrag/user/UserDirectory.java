@@ -8,16 +8,23 @@ import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Component
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class UserDirectory {
 
-    private final UserStore users;
-
-    public UserDirectory(UserStore users) {
-        this.users = users;
-    }
+    private UserStore users;
 
     @McpTool(
             name = "findUser",
@@ -36,7 +43,7 @@ public class UserDirectory {
         if (account == null) {
             return new UserMatch("", "", false);
         }
-        return new UserMatch(account.id(), account.username(), true);
+        return new UserMatch(account.getId(), account.getUsername(), true);
     }
 
     @McpTool(
@@ -56,7 +63,7 @@ public class UserDirectory {
         if (account == null) {
             return new UserRoles("", "", List.of(), false);
         }
-        return new UserRoles(account.id(), account.username(), account.roles(), true);
+        return new UserRoles(account.getId(), account.getUsername(), account.getRoles(), true);
     }
 
     void add(String id, String username, List<String> roles) {
@@ -74,7 +81,7 @@ public class UserDirectory {
         Optional<UserAccount> byUserId = id.isEmpty() ? Optional.empty() : users.findById(id);
         Optional<UserAccount> byName = name.isEmpty() ? Optional.empty() : users.findByUsername(name);
         if (!id.isEmpty() && !name.isEmpty()) {
-            if (byUserId.isEmpty() || byName.isEmpty() || !byUserId.get().id().equals(byName.get().id())) {
+            if (byUserId.isEmpty() || byName.isEmpty() || !byUserId.get().getId().equals(byName.get().getId())) {
                 return null;
             }
             return byUserId.get();
@@ -93,15 +100,42 @@ public class UserDirectory {
         return key(username).toLowerCase(Locale.ROOT);
     }
 
-    public record UserAccount(String id, String username, List<String> roles) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserAccount {
+
+        private String id;
+        private String username;
+        private List<String> roles;
     }
 
-    public record UserMatch(String id, String username, boolean found) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode
+    public static class UserMatch {
+
+        private String id;
+        private String username;
+        private boolean found;
     }
 
-    public record UserRoles(String id, String username, List<String> roles, boolean found) {
-        public UserRoles {
-            roles = roles == null ? List.of() : List.copyOf(roles);
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserRoles {
+
+        private String id;
+        private String username;
+        private List<String> roles;
+        private boolean found;
+
+        public List<String> getRoles() {
+            return roles == null ? List.of() : List.copyOf(roles);
         }
     }
 }

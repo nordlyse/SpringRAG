@@ -13,23 +13,34 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Component
 @ConditionalOnProperty(name = "spring-rag.directory-listener", havingValue = "true", matchIfMissing = true)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DataDirectoryListener implements SmartLifecycle {
 
     private static final Logger log = LoggerFactory.getLogger(DataDirectoryListener.class);
 
-    private final Path dataDirectory;
-    private final DocumentIngestion ingestion;
-    private final Set<String> seen = new HashSet<>();
+    private Path dataDirectory;
+    private DocumentIngestion ingestion;
+    private Set<String> seen = new HashSet<>();
     private volatile boolean running;
     private Thread worker;
 
+    @Autowired
     DataDirectoryListener(
             @Value("${spring-rag.data-directory}") Path dataDirectory,
             DocumentIngestion ingestion) {

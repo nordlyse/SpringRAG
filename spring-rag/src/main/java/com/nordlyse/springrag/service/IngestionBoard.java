@@ -4,12 +4,22 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Component
+@Getter
+@Setter
+@NoArgsConstructor(onConstructor_ = @Autowired)
+@AllArgsConstructor
 public class IngestionBoard {
 
-    private final ConcurrentHashMap<String, IngestionNotice> notices = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, IngestionNotice> notices = new ConcurrentHashMap<>();
 
     public void scanning(String fileName) {
         notices.put(fileName, new IngestionNotice(fileName, "scanning", "Scanning " + fileName + "..."));
@@ -32,12 +42,12 @@ public class IngestionBoard {
         return notices.values().stream()
                 .sorted(Comparator
                         .comparingInt(IngestionBoard::rank)
-                        .thenComparing(IngestionNotice::fileName))
+                        .thenComparing(IngestionNotice::getFileName))
                 .toList();
     }
 
     private static int rank(IngestionNotice notice) {
-        return switch (notice.state()) {
+        return switch (notice.getState()) {
             case "scanning" -> 0;
             case "failed" -> 1;
             default -> 2;

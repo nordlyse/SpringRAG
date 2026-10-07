@@ -30,9 +30,9 @@ class UserDirectoryTest {
         UserMatch byId = users.findUser("1002", "");
         UserMatch byName = users.findUser("", "Nora");
 
-        assertThat(byId.found()).isTrue();
-        assertThat(byId.id()).isEqualTo("1002");
-        assertThat(byId.username()).isEqualTo("nora");
+        assertThat(byId.isFound()).isTrue();
+        assertThat(byId.getId()).isEqualTo("1002");
+        assertThat(byId.getUsername()).isEqualTo("nora");
         assertThat(byName).isEqualTo(byId);
         assertThat(users.findUser("1002", "nora")).isEqualTo(byId);
     }
@@ -44,7 +44,7 @@ class UserDirectoryTest {
 
         UserMatch match = users.findUser("1001", "milo");
 
-        assertThat(match.found()).isFalse();
+        assertThat(match.isFound()).isFalse();
     }
 
     @Test
@@ -54,11 +54,11 @@ class UserDirectoryTest {
 
         UserRoles roles = users.rolesForUser("", "ada");
 
-        assertThat(roles.found()).isTrue();
-        assertThat(roles.id()).isEqualTo("1001");
-        assertThat(roles.roles()).containsExactly("ADMIN");
-        assertThat(users.rolesForUser("1003", "").roles()).containsExactly("VIEWER");
-        assertThat(users.rolesForUser("missing", "").found()).isFalse();
+        assertThat(roles.isFound()).isTrue();
+        assertThat(roles.getId()).isEqualTo("1001");
+        assertThat(roles.getRoles()).containsExactly("ADMIN");
+        assertThat(users.rolesForUser("1003", "").getRoles()).containsExactly("VIEWER");
+        assertThat(users.rolesForUser("missing", "").isFound()).isFalse();
     }
 
     @Test

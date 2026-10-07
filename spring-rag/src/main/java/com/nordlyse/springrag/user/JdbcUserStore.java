@@ -8,11 +8,21 @@ import java.util.Optional;
 
 import com.nordlyse.springrag.user.UserDirectory.UserAccount;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Repository
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 class JdbcUserStore implements UserStore {
 
     private static final String USERS = """
@@ -30,10 +40,11 @@ class JdbcUserStore implements UserStore {
             )
             """;
 
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     private volatile boolean tablesReady;
 
+    @Autowired
     JdbcUserStore(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -85,7 +96,7 @@ class JdbcUserStore implements UserStore {
             return Optional.empty();
         }
         UserAccount user = rows.getFirst();
-        return Optional.of(new UserAccount(user.id(), user.username(), rolesOf(user.id())));
+        return Optional.of(new UserAccount(user.getId(), user.getUsername(), rolesOf(user.getId())));
     }
 
     private List<String> rolesOf(String userId) {
