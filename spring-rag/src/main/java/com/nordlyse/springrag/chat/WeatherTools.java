@@ -9,7 +9,14 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Configuration
+@Getter
+@Setter
+@NoArgsConstructor
 public class WeatherTools {
 
     static final Set<String> CITY_FORECAST = Set.of("geocoding", "weather_forecast");
@@ -21,7 +28,7 @@ public class WeatherTools {
 
     static ToolCallbackProvider repaired(ToolCallbackProvider tools) {
         return () -> Arrays.stream(tools.getToolCallbacks())
-                .map(RepairedWeatherCallback::new)
+                .map(callback -> new RepairedWeatherCallback(callback))
                 .toArray(ToolCallback[]::new);
     }
 }

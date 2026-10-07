@@ -2,30 +2,39 @@ package com.nordlyse.springrag.ollama;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.ollama.api.OllamaApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
 @ConditionalOnProperty(name = "spring-rag.keep-models-loaded", havingValue = "true", matchIfMissing = true)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Slf4j
 public class ResidentModels implements SmartLifecycle {
 
     static final String HOLD = "-1s";
     static final String RELEASE = "0";
 
-    private static final Logger log = LoggerFactory.getLogger(ResidentModels.class);
-
-    private final OllamaApi ollamaApi;
-    private final String chatModel;
-    private final String embeddingModel;
+    private OllamaApi ollamaApi;
+    private String chatModel;
+    private String embeddingModel;
     private volatile boolean running;
     private boolean chatHeld;
     private boolean embeddingHeld;
 
+    @Autowired
     ResidentModels(
             OllamaApi ollamaApi,
             @Value("${spring.ai.ollama.chat.model:llama3.2}") String chatModel,

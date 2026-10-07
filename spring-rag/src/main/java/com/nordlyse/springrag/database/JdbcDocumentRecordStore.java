@@ -37,9 +37,9 @@ public class JdbcDocumentRecordStore implements DocumentRecordStore {
         ensureTable();
         jdbcTemplate.update(
                 "INSERT INTO documents (file_name, media_type, size_bytes) VALUES (?, ?, ?)",
-                document.fileName(),
-                document.mediaType(),
-                document.size());
+                document.getFileName(),
+                document.getMediaType(),
+                document.getSize());
     }
 
     @Override
@@ -47,9 +47,9 @@ public class JdbcDocumentRecordStore implements DocumentRecordStore {
         ensureTable();
         jdbcTemplate.update(
                 "UPDATE documents SET media_type = ?, size_bytes = ? WHERE file_name = ?",
-                document.mediaType(),
-                document.size(),
-                document.fileName());
+                document.getMediaType(),
+                document.getSize(),
+                document.getFileName());
     }
 
     @Override

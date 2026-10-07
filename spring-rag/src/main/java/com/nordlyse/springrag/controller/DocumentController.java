@@ -9,6 +9,7 @@ import com.nordlyse.springrag.service.IngestionBoard;
 import com.nordlyse.springrag.service.IngestionNotice;
 import com.nordlyse.springrag.service.StoredDocument;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,21 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @RestController
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class DocumentController {
 
-    private final DocumentService documentService;
-    private final DocumentIngestion documentIngestion;
-    private final IngestionBoard ingestionBoard;
-
-    public DocumentController(
-            DocumentService documentService,
-            DocumentIngestion documentIngestion,
-            IngestionBoard ingestionBoard) {
-        this.documentService = documentService;
-        this.documentIngestion = documentIngestion;
-        this.ingestionBoard = ingestionBoard;
-    }
+    private DocumentService documentService;
+    private DocumentIngestion documentIngestion;
+    private IngestionBoard ingestionBoard;
 
     @GetMapping("/documents")
     public List<StoredDocument> list() {
@@ -60,14 +61,14 @@ public class DocumentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one file is required.");
         }
         List<StoredDocument> stored = files.stream().map(documentService::add).toList();
-        stored.forEach(document -> documentIngestion.ingestStored(document.fileName()));
+        stored.forEach(document -> documentIngestion.ingestStored(document.getFileName()));
         return ResponseEntity.status(HttpStatus.CREATED).body(stored);
     }
 
     @PutMapping(path = "/documents/{fileName:.+}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StoredDocument replace(@PathVariable String fileName, @RequestParam("file") MultipartFile file) {
         StoredDocument stored = documentService.replace(fileName, file);
-        documentIngestion.ingestStored(stored.fileName());
+        documentIngestion.ingestStored(stored.getFileName());
         return stored;
     }
 

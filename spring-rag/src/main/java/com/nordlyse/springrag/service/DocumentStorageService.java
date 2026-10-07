@@ -10,23 +10,37 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Service
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class DocumentStorageService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "pdf", "png", "jpeg", "jpg", "txt", "doc", "docx", "xls", "xlsx", "pptx", "ppt", "csv");
 
-    private final Path dataDirectory;
+    @Value("${spring-rag.data-directory}")
+    private Path dataDirectory;
 
-    public DocumentStorageService(@Value("${spring-rag.data-directory}") Path dataDirectory) {
+    public Path getDataDirectory() {
+        if (dataDirectory == null) {
+            return null;
+        }
         Path root = dataDirectory.isAbsolute()
                 ? dataDirectory
                 : Path.of("").toAbsolutePath().resolve(dataDirectory);
-        this.dataDirectory = root.normalize();
+        return root.normalize();
     }
 
     public StoredDocument add(MultipartFile file) {
@@ -40,13 +54,14 @@ public class DocumentStorageService {
         }
 
         String storedName = safeBase(originalName, extension) + "-" + UUID.randomUUID() + "." + extension;
-        Path target = dataDirectory.resolve(storedName).normalize();
-        if (!target.startsWith(dataDirectory)) {
+        Path directory = getDataDirectory();
+        Path target = directory.resolve(storedName).normalize();
+        if (!target.startsWith(directory)) {
             throw new IllegalArgumentException("File name is not allowed.");
         }
 
         try {
-            Files.createDirectories(dataDirectory);
+            Files.createDirectories(directory);
             try (InputStream input = file.getInputStream()) {
                 Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
             }

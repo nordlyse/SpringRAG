@@ -18,10 +18,14 @@ import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.sl.extractor.SlideShowExtractor;
 
-final class DocumentText {
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    private DocumentText() {
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+final class DocumentText {
 
     static String read(Path path) throws IOException {
         return switch (extension(path)) {

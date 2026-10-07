@@ -5,13 +5,18 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 final class RepairedWeatherCallback implements ToolCallback {
 
-    private final ToolCallback delegate;
-
-    RepairedWeatherCallback(ToolCallback delegate) {
-        this.delegate = delegate;
-    }
+    private ToolCallback delegate;
 
     @Override
     public ToolDefinition getToolDefinition() {

@@ -8,7 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Configuration
+@Getter
+@Setter
+@NoArgsConstructor
 public class RagChatConfig {
 
     static final int MEMORY_WINDOW = 20;

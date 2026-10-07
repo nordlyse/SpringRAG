@@ -14,22 +14,22 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 class DocumentPassageAdvisor implements BaseAdvisor {
 
     private static final int PASSAGE_LIMIT = 20;
 
-    private final VectorStore vectorStore;
-    private final double similarityThreshold;
-    private final ObjectProvider<CityForecast> cityForecast;
-
-    DocumentPassageAdvisor(
-            VectorStore vectorStore,
-            double similarityThreshold,
-            ObjectProvider<CityForecast> cityForecast) {
-        this.vectorStore = vectorStore;
-        this.similarityThreshold = similarityThreshold;
-        this.cityForecast = cityForecast;
-    }
+    private VectorStore vectorStore;
+    private double similarityThreshold;
+    private ObjectProvider<CityForecast> cityForecast;
 
     @Override
     public ChatClientRequest before(ChatClientRequest request, AdvisorChain chain) {

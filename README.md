@@ -7,6 +7,7 @@ SpringRAG is a retrieval-augmented question system built with Ollama, pgvector, 
 - **Ollama 0.34.4** runs the local chat model and embeddings.
 - **pgvector 0.8.6** on PostgreSQL 17 holds the vector store and the document records.
 - **Spring AI 2.0.1** on **Spring Boot 4.1.1** and **Java 25** connects the model, the vector store, and the HTTP API.
+- **Lombok** supplies the accessors and constructors, and `@Slf4j` supplies the loggers. Lombok and SLF4J are MIT. Those logs cover holding the models in memory, a document scan that fails, and the data-directory listener when it stops.
 - Chat model: `llama3.2`. Embedding model: `nomic-embed-text` (768 dimensions).
 
 ## Run

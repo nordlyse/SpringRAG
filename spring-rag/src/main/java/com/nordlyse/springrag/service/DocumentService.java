@@ -26,7 +26,7 @@ public class DocumentService {
             documentRecordStore.add(stored);
         }
         catch (RuntimeException exception) {
-            documentStorageService.remove(stored.fileName());
+            documentStorageService.remove(stored.getFileName());
             throw exception;
         }
         return stored;

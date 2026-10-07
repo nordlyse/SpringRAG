@@ -10,6 +10,13 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
 final class WeatherArgumentRepair {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -41,9 +48,6 @@ final class WeatherArgumentRepair {
     private static final Set<String> NUMBER_ARGUMENTS = Set.of("latitude", "longitude");
 
     private static final Set<String> LIST_ARGUMENTS = Set.of("hourly", "daily", "minutely_15", "current", "models");
-
-    private WeatherArgumentRepair() {
-    }
 
     static String repair(String toolName, String toolInput) {
         if (toolInput == null || toolInput.isBlank() || toolName == null) {

@@ -7,6 +7,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
 final class WeatherWhen {
 
     static final int FORECAST_PAST_DAYS = 92;
@@ -20,7 +28,16 @@ final class WeatherWhen {
         UNREADABLE
     }
 
-    record Asked(LocalDate date, String label, Kind kind) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class Asked {
+
+        private LocalDate date;
+        private String label;
+        private Kind kind;
+
         static Asked unreadable() {
             return new Asked(null, "", Kind.UNREADABLE);
         }
@@ -78,21 +95,18 @@ final class WeatherWhen {
             Map.entry("oktober", 10),
             Map.entry("desember", 12));
 
-    private WeatherWhen() {
-    }
-
     static Asked resolve(String question, LocalDate today) {
         String folded = fold(question);
         Parsed parsed = explicit(folded);
-        if (parsed.unreadable()) {
+        if (parsed.isUnreadable()) {
             return Asked.unreadable();
         }
-        if (parsed.date() != null) {
-            return new Asked(parsed.date(), parsed.date().toString(), kind(parsed.date(), today));
+        if (parsed.getDate() != null) {
+            return new Asked(parsed.getDate(), parsed.getDate().toString(), kind(parsed.getDate(), today));
         }
         Offset offset = offset(folded);
-        LocalDate date = today.plusDays(offset.days());
-        return new Asked(date, offset.label(), kind(date, today));
+        LocalDate date = today.plusDays(offset.getDays());
+        return new Asked(date, offset.getLabel(), kind(date, today));
     }
 
     static String withoutDates(String question) {
@@ -176,7 +190,14 @@ final class WeatherWhen {
         };
     }
 
-    private record Offset(int days, String label) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Offset {
+
+        private int days;
+        private String label;
     }
 
     private static Parsed explicit(String folded) {
@@ -192,7 +213,7 @@ final class WeatherWhen {
         if (next == null) {
             return current;
         }
-        if (current == null || next.at() < current.at()) {
+        if (current == null || next.getAt() < current.getAt()) {
             return next;
         }
         return current;
@@ -296,6 +317,14 @@ final class WeatherWhen {
         return out.toString();
     }
 
-    private record Parsed(LocalDate date, boolean unreadable, int at) {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Parsed {
+
+        private LocalDate date;
+        private boolean unreadable;
+        private int at;
     }
 }

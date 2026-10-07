@@ -30,16 +30,16 @@ class DocumentServiceTest {
         StoredDocument stored = service.add(original);
 
         assertThat(service.list()).containsExactly(stored);
-        assertThat(service.find(stored.fileName())).contains(stored);
-        assertThat(Files.readString(dataDirectory.resolve(stored.fileName()))).isEqualTo("hello");
+        assertThat(service.find(stored.getFileName())).contains(stored);
+        assertThat(Files.readString(dataDirectory.resolve(stored.getFileName()))).isEqualTo("hello");
 
         MockMultipartFile updated = new MockMultipartFile("file", "notes.txt", "text/plain", "updated".getBytes());
-        StoredDocument replaced = service.replace(stored.fileName(), updated);
+        StoredDocument replaced = service.replace(stored.getFileName(), updated);
 
-        assertThat(replaced.fileName()).isEqualTo(stored.fileName());
-        assertThat(replaced.size()).isEqualTo(7);
-        assertThat(Files.readString(dataDirectory.resolve(stored.fileName()))).isEqualTo("updated");
-        assertThat(service.find(stored.fileName())).contains(replaced);
+        assertThat(replaced.getFileName()).isEqualTo(stored.getFileName());
+        assertThat(replaced.getSize()).isEqualTo(7);
+        assertThat(Files.readString(dataDirectory.resolve(stored.getFileName()))).isEqualTo("updated");
+        assertThat(service.find(stored.getFileName())).contains(replaced);
     }
 
     @Test
@@ -48,11 +48,11 @@ class DocumentServiceTest {
         DocumentService service = new DocumentService(new DocumentStorageService(dataDirectory), records);
         StoredDocument stored = service.add(new MockMultipartFile("file", "notes.txt", "text/plain", "hello".getBytes()));
 
-        service.remove(stored.fileName());
+        service.remove(stored.getFileName());
 
         assertThat(service.list()).isEmpty();
-        assertThat(service.find(stored.fileName())).isEmpty();
-        assertThat(Files.exists(dataDirectory.resolve(stored.fileName()))).isFalse();
+        assertThat(service.find(stored.getFileName())).isEmpty();
+        assertThat(Files.exists(dataDirectory.resolve(stored.getFileName()))).isFalse();
     }
 
     @Test
@@ -78,12 +78,12 @@ class DocumentServiceTest {
 
         @Override
         public void add(StoredDocument document) {
-            rows.put(document.fileName(), document);
+            rows.put(document.getFileName(), document);
         }
 
         @Override
         public void update(StoredDocument document) {
-            rows.put(document.fileName(), document);
+            rows.put(document.getFileName(), document);
         }
 
         @Override

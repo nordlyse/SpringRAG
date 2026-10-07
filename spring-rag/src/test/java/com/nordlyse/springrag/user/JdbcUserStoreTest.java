@@ -47,9 +47,9 @@ class JdbcUserStoreTest {
 
         UserAccount account = store.findById("1002").orElseThrow();
 
-        assertThat(account.id()).isEqualTo("1002");
-        assertThat(account.username()).isEqualTo("nora");
-        assertThat(account.roles()).containsExactly("EDITOR", "VIEWER");
+        assertThat(account.getId()).isEqualTo("1002");
+        assertThat(account.getUsername()).isEqualTo("nora");
+        assertThat(account.getRoles()).containsExactly("EDITOR", "VIEWER");
     }
 
     @Test

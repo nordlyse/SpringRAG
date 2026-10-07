@@ -1,4 +1,16 @@
 package com.nordlyse.springrag.chat;
 
-public record ChatRequest(String message, String conversationId) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChatRequest {
+
+    private String message;
+    private String conversationId;
 }

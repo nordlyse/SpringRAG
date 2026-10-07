@@ -7,7 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @RestControllerAdvice
+@Getter
+@Setter
+@NoArgsConstructor
 public class DocumentExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)

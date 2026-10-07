@@ -12,6 +12,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.StreamingChatModel;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,14 +24,24 @@ import com.nordlyse.springrag.user.UserDirectory;
 
 import reactor.core.publisher.Flux;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @RestController
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatController {
 
-    private final ChatClient chatClient;
-    private final ChatClient weatherClient;
-    private final ChatMemory chatMemory;
-    private final ObjectProvider<CityForecast> cityForecast;
+    private ChatClient chatClient;
+    private ChatClient weatherClient;
+    private ChatMemory chatMemory;
+    private ObjectProvider<CityForecast> cityForecast;
 
+    @Autowired
     public ChatController(
             StreamingChatModel streamingChatModel,
             ChatMemory chatMemory,
@@ -53,18 +64,18 @@ public class ChatController {
 
     @PostMapping(path = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> answer(@RequestBody ChatRequest request) {
-        if (request == null || request.message() == null || request.message().isBlank()) {
+        if (request == null || request.getMessage() == null || request.getMessage().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message is required.");
         }
-        String conversationId = conversationId(request.conversationId());
-        chatMemory.add(conversationId, new UserMessage(request.message()));
-        boolean weather = PassageQuestion.asksForWeather(request.message());
+        String conversationId = conversationId(request.getConversationId());
+        chatMemory.add(conversationId, new UserMessage(request.getMessage()));
+        boolean weather = PassageQuestion.asksForWeather(request.getMessage());
         if (weather) {
             CityForecast forecast = cityForecast.getIfAvailable();
             if (forecast != null) {
-                String spoken = forecast.report(request.message());
+                String spoken = forecast.report(request.getMessage());
                 if (spoken.isBlank()) {
-                    spoken = CityForecast.missed(CityForecast.inTurkish(request.message()));
+                    spoken = CityForecast.missed(CityForecast.inTurkish(request.getMessage()));
                 }
                 chatMemory.add(conversationId, new AssistantMessage(spoken));
                 return Flux.just(spoken);
@@ -75,7 +86,7 @@ public class ChatController {
         ChatClient client = weather ? weatherClient : chatClient;
         return client.prompt()
                 .messages(earlier)
-                .user(request.message())
+                .user(request.getMessage())
                 .stream()
                 .content()
                 .doOnNext(reply::append)
