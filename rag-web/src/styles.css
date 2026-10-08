@@ -59,12 +59,12 @@ body {
   align-content: center;
   justify-content: space-between;
   gap: 1rem;
-  width: min(74rem, calc(100% - 1rem));
+  width: min(68rem, calc(100% - 2rem));
   min-height: 15.8rem;
   margin: 0 auto 1.15rem;
   padding: 0.85rem 1.15rem 0.85rem 1.4rem;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
+  border-radius: 0;
   background: rgba(12, 10, 22, 0.62);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(18px);
@@ -395,8 +395,15 @@ article {
   .site-header,
   .site-footer {
     flex-wrap: wrap;
-    border-radius: 1.25rem;
     padding: 0.75rem;
+  }
+
+  .site-header {
+    border-radius: 1.25rem;
+  }
+
+  .site-footer {
+    border-radius: 0;
   }
 
   .site-nav {
