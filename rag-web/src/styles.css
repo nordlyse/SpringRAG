@@ -57,8 +57,7 @@ body {
   gap: 0.35rem;
 }
 
-.site-nav a,
-.social a {
+.site-nav a {
   color: #efeaf8;
   text-decoration: none;
 }
@@ -71,13 +70,13 @@ body {
 }
 
 .site-nav a:hover,
-.social a:hover {
+.social button:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
 .site-nav a:focus-visible,
-.social a:focus-visible {
+.social button:focus-visible {
   outline: 2px solid #c4b5fd;
   outline-offset: 2px;
 }
@@ -91,14 +90,19 @@ body {
   list-style: none;
 }
 
-.social a {
+.social button {
   display: grid;
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
+  margin: 0;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
+  color: #efeaf8;
+  justify-self: auto;
+  cursor: pointer;
 }
 
 .social svg {

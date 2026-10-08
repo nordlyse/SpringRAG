@@ -6,9 +6,9 @@ const LINKS = [
 ]
 
 const SOCIAL = [
-  { name: 'GitHub', href: 'https://github.com/nordlyse/SpringRAG', icon: GitHubIcon },
-  { name: 'LinkedIn', href: 'https://www.linkedin.com/', icon: LinkedInIcon },
-  { name: 'X', href: 'https://x.com/', icon: XIcon },
+  { name: 'GitHub', icon: GitHubIcon },
+  { name: 'LinkedIn', icon: LinkedInIcon },
+  { name: 'X', icon: XIcon },
 ]
 
 export function SiteHeader() {
@@ -24,9 +24,9 @@ export function SiteHeader() {
       <ul className="social">
         {SOCIAL.map((item) => (
           <li key={item.name}>
-            <a href={item.href} aria-label={item.name} target="_blank" rel="noreferrer">
+            <button type="button" aria-label={item.name}>
               <item.icon />
-            </a>
+            </button>
           </li>
         ))}
       </ul>
