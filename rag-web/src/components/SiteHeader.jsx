@@ -12,9 +12,17 @@ const SOCIAL = [
 ]
 
 export function SiteHeader() {
+  return <SiteBar element="header" className="site-header" label="Primary" />
+}
+
+export function SiteFooter() {
+  return <SiteBar element="footer" className="site-footer" label="Footer" />
+}
+
+function SiteBar({ element: Element, className, label }) {
   return (
-    <header className="site-header">
-      <nav className="site-nav" aria-label="Primary">
+    <Element className={className}>
+      <nav className="site-nav" aria-label={label}>
         {LINKS.map((link) => (
           <a key={link.href} href={link.href}>
             {link.label}
@@ -30,7 +38,7 @@ export function SiteHeader() {
           </li>
         ))}
       </ul>
-    </header>
+    </Element>
   )
 }
 

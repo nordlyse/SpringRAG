@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { addDocuments, ask, ingestionNotices } from './api.js'
 import { GlassCard } from './components/GlassCard.jsx'
 import { PrismLights } from './components/PrismLights.jsx'
-import { SiteHeader } from './components/SiteHeader.jsx'
+import { SiteFooter, SiteHeader } from './components/SiteHeader.jsx'
 
 const ACCEPT = '.pdf,.png,.jpeg,.jpg,.txt,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.csv'
 
@@ -159,6 +159,7 @@ export function App() {
           </GlassCard>
         </section>
       </main>
+      <SiteFooter />
     </>
   )
 }
