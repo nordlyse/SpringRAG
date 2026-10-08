@@ -33,12 +33,119 @@ body {
   background: radial-gradient(ellipse at 50% 20%, transparent 0%, rgba(7, 6, 15, 0.18) 62%, rgba(7, 6, 15, 0.55) 100%);
 }
 
+.site-header {
+  position: sticky;
+  top: 0.85rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(68rem, calc(100% - 2rem));
+  margin: 0.85rem auto 0;
+  padding: 0.7rem 0.85rem 0.7rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(12, 10, 22, 0.62);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.site-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(68rem, calc(100% - 2rem));
+  min-height: 15.8rem;
+  margin: 0 auto 1.15rem;
+  padding: 0.85rem 1.15rem 0.85rem 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  background: rgba(12, 10, 22, 0.62);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.site-nav a {
+  color: #efeaf8;
+  text-decoration: none;
+}
+
+.site-nav a {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+.site-nav a:hover,
+.social button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.site-nav a:focus-visible,
+.social button:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.social {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #efeaf8;
+  justify-self: auto;
+  cursor: pointer;
+}
+
+.social svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
 main {
   position: relative;
   z-index: 2;
   width: min(68rem, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 2.5rem 0 4rem;
+  padding: 2.5rem 0 2rem;
+}
+
+.hero,
+.page-section {
+  scroll-margin-top: 5.5rem;
+}
+
+.page-section p {
+  margin: 0;
+  color: #efeaf8;
+  line-height: 1.5;
 }
 
 .eyebrow {
@@ -285,6 +392,35 @@ article {
 }
 
 @media (max-width: 760px) {
+  .site-header,
+  .site-footer {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+  }
+
+  .site-header {
+    border-radius: 1.25rem;
+  }
+
+  .site-footer {
+    border-radius: 0;
+  }
+
+  .site-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .site-nav a {
+    padding: 0.4rem 0.45rem;
+    font-size: 0.84rem;
+  }
+
+  .social {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { addDocuments, ask, ingestionNotices } from './api.js'
 import { GlassCard } from './components/GlassCard.jsx'
 import { PrismLights } from './components/PrismLights.jsx'
+import { SiteFooter, SiteHeader } from './components/SiteHeader.jsx'
 
 const ACCEPT = '.pdf,.png,.jpeg,.jpg,.txt,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.csv'
 
@@ -57,8 +58,9 @@ export function App() {
     <>
       <PrismLights />
       <div className="scrim" aria-hidden="true" />
+      <SiteHeader />
       <main>
-        <header>
+        <section id="home" className="hero">
           <p className="eyebrow">SpringRAG</p>
           <h1 className="shiny">Documents and questions</h1>
           <p className="lede">
@@ -69,7 +71,7 @@ export function App() {
             <li>Local model</li>
             <li>Document upload</li>
           </ul>
-        </header>
+        </section>
 
         <div className="grid">
           <GlassCard title="Upload">
@@ -130,7 +132,34 @@ export function App() {
             {streaming ? <span className="caret" /> : null}
           </article>
         </GlassCard>
+
+        <section id="about" className="page-section">
+          <GlassCard title="About">
+            <p>
+              SpringRAG answers from stored documents and from tools that are explicitly allowed. The model runs
+              locally.
+            </p>
+          </GlassCard>
+        </section>
+
+        <section id="projects" className="page-section">
+          <GlassCard title="Projects">
+            <p>
+              This page uploads documents, shows when a scan is ready, and streams the answer into the reply.
+            </p>
+          </GlassCard>
+        </section>
+
+        <section id="help" className="page-section">
+          <GlassCard title="Help">
+            <p>
+              Choose a file and upload it. When the notice says the document is ready, type a question. The reply
+              appears above.
+            </p>
+          </GlassCard>
+        </section>
       </main>
+      <SiteFooter />
     </>
   )
 }
