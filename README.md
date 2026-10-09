@@ -32,10 +32,11 @@ The API, health, info, document, chat, and user MCP paths share port `8080`. Pos
 
 ## Licences
 
-Direct libraries are MIT or Apache-2.0. The recorded exceptions are the pgvector image and client (PostgreSQL License) and JaCoCo (EPL-2.0). Transitive pieces that ship with an allowed tool are listed with that tool.
+SpringRAG itself is Apache-2.0. The full terms are in [LICENSE](LICENSE). That licence matches the main libraries in the stack: Spring Boot, Spring AI, PDFBox, POI, and Maven are Apache-2.0, and the MIT tools can sit beside it. Third-party pieces keep their own licences. The recorded exceptions are the pgvector image and client (PostgreSQL License) and JaCoCo (EPL-2.0). Transitive pieces that ship with an allowed tool are listed with that tool.
 
 | Tool | Version | Licence |
 | --- | --- | --- |
+| SpringRAG | 0.1.0 | Apache-2.0 |
 | Spring Boot (web, actuator, test) | 4.1.1 | Apache-2.0 |
 | Spring AI (Ollama, pgvector, advisors, MCP server, MCP client) | 2.0.1 | Apache-2.0 |
 | Spring JDBC | from Spring Boot | Apache-2.0 |
@@ -63,6 +64,10 @@ Direct libraries are MIT or Apache-2.0. The recorded exceptions are the pgvector
 | Node.js, the page runtime | 22 | MIT |
 
 The chat weights `llama3.2` use the Meta Llama 3.2 community licence. The embedding weights `nomic-embed-text` are Apache-2.0. The Open-Meteo API source is AGPL and is not part of this repository. The glass cards, shiny heading, and WebGL prism background are original source in `rag-web`.
+
+## Disclaimer
+
+SpringRAG is a hobby project. It is offered as is. The author accepts no responsibility and no liability for running it, for any answer it produces, or for any document stored with it. Anyone who runs the application is responsible for that use. The same point is in the Apache-2.0 terms: section 7 disclaims warranty, and section 8 limits liability.
 
 ## Run
 
