@@ -10,6 +10,60 @@ SpringRAG is a retrieval-augmented question system built with Ollama, pgvector, 
 - **Lombok** supplies the accessors and constructors, and `@Slf4j` supplies the loggers. Lombok and SLF4J are MIT. Those logs cover holding the models in memory, a document scan that fails, and the data-directory listener when it stops.
 - Chat model: `llama3.2`. Embedding model: `nomic-embed-text` (768 dimensions).
 
+## Addresses
+
+Open the web page at [http://localhost:5173](http://localhost:5173). The header and footer links stay on that host: [Home](http://localhost:5173/#home), [About](http://localhost:5173/#about), [Projects](http://localhost:5173/#projects), and [Help](http://localhost:5173/#help). The page is the Vite dev server in `rag-web`. It proxies `/documents` and `/chat` to the API, so those calls also work through port `5173`.
+
+| Service | From the host | Port | From another Compose service |
+| --- | --- | --- | --- |
+| Web page | [http://localhost:5173](http://localhost:5173) | `5173` | `http://rag-web:5173` |
+| API | [http://localhost:8080](http://localhost:8080) | `8080` | `http://spring-rag:8080` |
+| Documents | [http://localhost:8080/documents](http://localhost:8080/documents) | `8080` | `http://spring-rag:8080/documents` |
+| Ingestion notices | [http://localhost:8080/documents/ingestion](http://localhost:8080/documents/ingestion) | `8080` | `http://spring-rag:8080/documents/ingestion` |
+| Chat stream | [http://localhost:8080/chat](http://localhost:8080/chat) | `8080` | `http://spring-rag:8080/chat` |
+| User and role MCP server | [http://localhost:8080/mcp](http://localhost:8080/mcp) | `8080` | `http://spring-rag:8080/mcp` |
+| Health | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) | `8080` | `http://spring-rag:8080/actuator/health` |
+| Info | [http://localhost:8080/actuator/info](http://localhost:8080/actuator/info) | `8080` | `http://spring-rag:8080/actuator/info` |
+| Ollama | [http://localhost:11434](http://localhost:11434) | `11434` | `http://ollama:11434` |
+| PostgreSQL | `localhost:5432`, database `springrag`, user `springrag`, password `springrag` | `5432` | `jdbc:postgresql://pgvector:5432/springrag` |
+| Weather MCP server | [http://localhost:3000/mcp](http://localhost:3000/mcp) | `3000` | `http://open-meteo:3000/mcp` |
+
+The API, health, info, document, chat, and user MCP paths share port `8080`. PostgreSQL, Ollama, and the weather server each have their own port. Uploaded files are written to `spring-rag/data` on the host.
+
+## Licences
+
+Direct libraries are MIT or Apache-2.0. The recorded exceptions are the pgvector image and client (PostgreSQL License) and JaCoCo (EPL-2.0). Transitive pieces that ship with an allowed tool are listed with that tool.
+
+| Tool | Version | Licence |
+| --- | --- | --- |
+| Spring Boot (web, actuator, test) | 4.1.1 | Apache-2.0 |
+| Spring AI (Ollama, pgvector, advisors, MCP server, MCP client) | 2.0.1 | Apache-2.0 |
+| Spring JDBC | from Spring Boot | Apache-2.0 |
+| MCP Java SDK | transitive from Spring AI | MIT |
+| Lombok | from Spring Boot | MIT |
+| SLF4J | from Spring Boot | MIT |
+| Apache PDFBox | 3.0.7 | Apache-2.0 |
+| Apache POI and poi-scratchpad | 5.5.1 | Apache-2.0 |
+| PostgreSQL JDBC | transitive from the pgvector starter | BSD-2-Clause |
+| pgvector Java client | transitive from the pgvector starter | PostgreSQL License |
+| pgvector image `pgvector/pgvector` | 0.8.6-pg17 | PostgreSQL License |
+| PostgreSQL | 17, in that image | PostgreSQL License |
+| Ollama | 0.34.4 | MIT |
+| open-meteo-mcp | 2.5.2 | MIT |
+| `dotenv` inside the weather image | transitive | BSD-2-Clause |
+| `lru-cache` inside the weather image | transitive | BlueOak-1.0.0 |
+| Open-Meteo forecast data | public API | CC BY 4.0 |
+| Eclipse Temurin JRE | 25 | GPL-2.0 with the Classpath Exception |
+| Maven, used only to build the image | 3.9.16 | Apache-2.0 |
+| JaCoCo, tests only | 0.8.15 | EPL-2.0 |
+| React | 19.3.0 | MIT |
+| React DOM | 19.3.0 | MIT |
+| Vite | 6.4.3 | MIT |
+| `@vitejs/plugin-react` | 5.2.0 | MIT |
+| Node.js, the page runtime | 22 | MIT |
+
+The chat weights `llama3.2` use the Meta Llama 3.2 community licence. The embedding weights `nomic-embed-text` are Apache-2.0. The Open-Meteo API source is AGPL and is not part of this repository. The glass cards, shiny heading, and WebGL prism background are original source in `rag-web`.
+
 ## Run
 
 Ollama, pgvector, the Open-Meteo weather server, `spring-rag`, and the web app are defined in `compose.yaml`. The Spring AI project is not kept at the repository root.
